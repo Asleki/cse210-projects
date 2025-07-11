@@ -15,39 +15,39 @@ using System;
 //
 // Key features of this enhancement include:
 //
-// 1.  **First-Time User Setup:**
+// 1.  First-Time User Setup:
 //     - Upon the very first run, the program detects that no security preferences
 //       have been set.
 //     - It then greets the new user with a welcome message and offers the option
 //       to set up a privacy feature (PIN or Password).
 //
-// 2.  **Choice of Security Method:**
+// 2.  Choice of Security Method:
 //     - Users can choose between two security methods:
-//         - **PIN:** Requires only digits.
-//         - **Password:** Requires a combination of letters, digits, and special characters
+//         - PIN: Requires only digits.
+//         - Password: Requires a combination of letters, digits, and special characters
 //           for stronger security.
 //     - The program includes basic validation for these formats.
 //
-// 3.  **Security Code Verification:**
+// 3.  Security Code Verification:
 //     - During setup, the user must repeat their chosen PIN/Password to verify it,
 //       preventing typos from locking them out.
 //
-// 4.  **Persistent Security Settings:**
+// 4.  Persistent Security Settings:
 //     - The chosen security code (PIN or Password) is saved to a dedicated file (`privacy.txt`).
-//     - This file is intended to be excluded from version control (e.g., via .gitignore)
-//       to ensure user privacy if the code is shared on platforms like GitHub.
+//     - This file is intended to be excluded from version control (in .gitignore)
+//       to ensure user privacy if the code is shared on platforms like GitHub, when opened on a 
+//       different machine, or when the program is run on a new installation.
 //
-// 5.  **Mandatory Access Control:**
-//     - Once a security code is set, the program requires it for **initial access**
+// 5.  Mandatory Access Control:
+//     - Once a security code is set, the program requires it for initial access
 //       immediately upon startup.
-//     - It also requires the security code for critical operations like **loading**
-//       and **saving** the journal, ensuring that sensitive data is only accessed
+//     - It also requires the security code for critical operations like loading
+//       and saving the journal, ensuring that sensitive data is only accessed
 //       by an authorized user.
 //
 // This comprehensive security approach provides users with peace of mind,
 // encouraging more consistent and private journaling, thereby addressing
 // a key psychological barrier to journal keeping.
-// ***************************************************************************************************
 
 class Program
 {
