@@ -1,6 +1,6 @@
-// SecurityManager.cs
 using System;
 using System.IO; // Required for file operations (reading/writing privacy.txt)
+using System.Reflection; // Required for Assembly.GetExecutingAssembly().Location if used, but AppDomain.CurrentDomain.BaseDirectory is often sufficient
 
 // This class handles all security-related features, such as setting,
 // verifying, and storing user passwords or PINs.
@@ -8,7 +8,8 @@ public class SecurityManager
 {
     // The name of the file where the password/PIN will be stored.
     // This file should NOT be committed to public repositories like GitHub.
-    private string _privacyFilename = "privacy.txt";
+    // We now construct the path to ensure it's always relative to the executable's directory.
+    private string _privacyFilename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "privacy.txt");
 
     // Stores the password/PIN loaded from the file.
     private string _storedPassword = "";
@@ -30,14 +31,22 @@ public class SecurityManager
     // Loads the password/PIN from the privacy file into memory.
     private void LoadStoredPassword()
     {
-        if (File.Exists(_privacyFilename))
+        try
         {
-            // Reads the entire content of the file (expecting only one line: the password/PIN).
-            _storedPassword = File.ReadAllText(_privacyFilename).Trim();
+            if (File.Exists(_privacyFilename))
+            {
+                // Reads the entire content of the file (expecting only one line: the password/PIN).
+                _storedPassword = File.ReadAllText(_privacyFilename).Trim();
+            }
+            else
+            {
+                _storedPassword = ""; // No password if file doesn't exist
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _storedPassword = ""; // No password if file doesn't exist
+            Console.WriteLine($"Error loading stored password: {ex.Message}");
+            _storedPassword = ""; // Ensure it's empty on error
         }
     }
 
@@ -101,10 +110,18 @@ public class SecurityManager
             }
         }
 
-        // Save the new password to the file.
-        File.WriteAllText(_privacyFilename, newPassword);
-        _storedPassword = newPassword; // Update in-memory copy
-        Console.WriteLine("Security feature set successfully!");
+        try
+        {
+            // Save the new password to the file.
+            File.WriteAllText(_privacyFilename, newPassword);
+            _storedPassword = newPassword; // Update in-memory copy
+            Console.WriteLine("Security feature set successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving new security code: {ex.Message}");
+            Console.WriteLine("Failed to set security feature. Please check file permissions.");
+        }
     }
 
     // Verifies if the user-entered password matches the stored password.
