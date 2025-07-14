@@ -1,1 +1,28 @@
-11/07/2025|Who was the most interesting person I interacted with today?|Mom
+=== Journal Entry ===
+Date: 14/07/2025
+Time: 08:04
+Mood: Happy
+Prompt: Who was the most interesting person encountered today?
+Entry: Thacker
+
+=== Journal Entry ===
+Date: 14/07/2025
+Time: 08:04
+Mood: Happy
+Prompt: How was a challenge handled today, and what was learned from it?
+Entry: I used AI to clean my code.
+
+=== Journal Entry ===
+Date: 14/07/2025
+Time: 08:26
+Mood: Happy
+Prompt: How was a challenge handled today, and what was learned from it?
+Entry: I used AI to clean my code
+
+=== Journal Entry ===
+Date: 14/07/2025
+Time: 08:27
+Mood: Happy
+Prompt: How was a challenge handled today, and what was learned from it?
+Entry: Used A I to clean my code.
+

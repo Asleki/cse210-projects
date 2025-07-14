@@ -1,32 +1,60 @@
-// Entry.cs
-using System;
+using System; // Provides fundamental classes and base types, including DateTime for date and time operations.
 
 // This class represents a single journal entry.
-// It is responsible for holding the data associated with one entry
-// and providing methods to display or prepare that data.
+// Its primary responsibility is to store all the specific details of one entry
+// and to provide methods for presenting this data in a readable format
+// and for preparing it to be saved persistently.
 public class Entry
 {
-    // These are the member variables (attributes) that store the data for each entry.
-    // They are public to allow easy access from other classes like Journal.
-    public string _date;
-    public string _promptText;
-    public string _entryText;
+    // These are the core pieces of information that make up a journal entry.
+    // They are accessible to other parts of the application, such as the Journal class,
+    // to allow for easy management and display of entries.
+    public string _date;       // Stores the date when the entry was created.
+    public string _promptText; // Stores the specific prompt that the user responded to.
+    public string _entryText;  // Stores the user's actual response or thoughts for the entry.
+    public string _time;       // Stores the exact time of day when the entry was created, adding precision.
+    public string _mood;       // Stores the user's reported mood at the time of writing, providing emotional context.
 
     // This method is responsible for displaying the entry's content to the console.
-    // It formats the date, prompt, and the user's response in a readable way.
+    // It formats the time, prompt, and the user's response in a readable, stylized way.
+    // Date and Mood are intentionally excluded from this method, as they are handled
+    // by the Journal class for daily grouping.
     public void Display()
     {
-        Console.WriteLine($"Date: {_date} - Prompt: {_promptText}");
-        Console.WriteLine($"Entry: {_entryText}");
-        Console.WriteLine(); // Adds a blank line for better readability between entries
+        // Display Time.
+        Console.ForegroundColor = ConsoleColor.Yellow; // Color for labels
+        Console.Write("🕒 Time: ");
+        Console.ForegroundColor = ConsoleColor.White; // Color for values
+        Console.WriteLine($"{_time}");
+        Console.ResetColor();
+
+        // Display Prompt.
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.Write("Prompt: ");
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine($"{_promptText}");
+        Console.ResetColor();
+
+        // Display User Entry.
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.Write("Entry: ");
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine($"{_entryText}");
+        Console.ResetColor();
     }
 
-    // This method prepares the entry's data into a single string.
-    // This format is suitable for writing to a file, using a chosen separator.
+    // This method prepares the entry's data into a multi-line string for saving to a file.
+    // The format is designed for human readability when viewing the raw text file,
+    // with clear labels and line breaks between each piece of information.
+    // A distinct header ("=== Journal Entry ===") marks the beginning of each new entry
+    // to facilitate easier parsing when loading the data back into the application.
     public string GetStringRepresentationForSaving()
     {
-        // We're using the pipe character '|' as a separator.
-        // This is a common practice to keep data organized when saving to plain text files.
-        return $"{_date}|{_promptText}|{_entryText}";
+        return "=== Journal Entry ===\n" +
+               $"Date: {_date}\n" +
+               $"Time: {_time}\n" +
+               $"Mood: {_mood}\n" +
+               $"Prompt: {_promptText}\n" +
+               $"Entry: {_entryText}\n"; // Each field is on a new line, with a final newline for consistency.
     }
 }
