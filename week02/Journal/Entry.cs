@@ -16,31 +16,22 @@ public class Entry
     public string _mood;       // Stores the user's reported mood at the time of writing, providing emotional context.
 
     // This method is responsible for displaying the entry's content to the console.
-    // It formats the time, prompt, and the user's response in a readable, stylized way.
+    // It formats the time, prompt, and the user's response in a readable way.
     // Date and Mood are intentionally excluded from this method, as they are handled
-    // by the Journal class for daily grouping.
+    // by the Journal class for daily grouping. All output will now be in blue.
     public void Display()
     {
-        // Display Time.
-        Console.ForegroundColor = ConsoleColor.Yellow; // Color for labels
+        Console.ForegroundColor = ConsoleColor.Blue; // Set color for all entry display output
+
         Console.Write("🕒 Time: ");
-        Console.ForegroundColor = ConsoleColor.White; // Color for values
         Console.WriteLine($"{_time}");
-        Console.ResetColor();
 
-        // Display Prompt.
-        Console.ForegroundColor = ConsoleColor.Yellow;
         Console.Write("Prompt: ");
-        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine($"{_promptText}");
-        Console.ResetColor();
 
-        // Display User Entry.
-        Console.ForegroundColor = ConsoleColor.Yellow;
         Console.Write("Entry: ");
-        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine($"{_entryText}");
-        Console.ResetColor();
+        // No Console.ResetColor() as all output should be blue
     }
 
     // This method prepares the entry's data into a multi-line string for saving to a file.

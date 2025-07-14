@@ -1,46 +1,81 @@
-using System; // Provides fundamental classes and base types, including Console for input/output and DateTime for date/time.
-using System.IO; // Necessary for file path manipulation (Path.Combine) and access to base directory (AppDomain.CurrentDomain.BaseDirectory).
+using System; // Provides fundamental classes and base types, including Console for
+// input/output and DateTime for date/time.
+using System.IO; // Necessary for file path manipulation (Path.Combine)
+// and access to base directory (AppDomain.CurrentDomain.BaseDirectory).
 // Removed: using System.Threading; // No longer needed as Thread.Sleep was removed.
 using System.Globalization; // Required for CultureInfo.InvariantCulture for consistent date formatting.
 
 // This is the main program class.
 // Its primary role is to control the overall flow of the application,
 // manage user interaction through a menu, process user input, and coordinate actions
-// among the various components of the journaling system: Journal, Entry, PromptGenerator, and SecurityManager.
+// among the various components of the journaling system: Journal, Entry, PromptGenerator,
+// and SecurityManager.
 
 // ***************************************************************************************************
 // EXCEEDING CORE REQUIREMENTS - DETAILED DESCRIPTION
 // ***************************************************************************************************
-// This program significantly enhances the basic journaling application by implementing advanced features
-// focused on user privacy, richer journal entry content, and an improved user experience.
-// These additions directly address common reasons why people might struggle with consistent journaling.
+// This program significantly enhances the basic journaling application by implementing
+// advanced features focused on user privacy, richer journal entry content, and an improved
+// user experience. These additions directly address common reasons why people might
+// struggle with consistent journaling.
 //
 // Key features that extend beyond the core assignment requirements include:
 //
 // 1.  Robust User Privacy and Security System:
-//     - This addresses the critical concern of unauthorized access to personal thoughts, a significant barrier to digital journaling.
-//     - First-Time User Onboarding: Upon the very first launch, the program intelligently detects if no security settings have been established. It then warmly welcomes new users and offers them the option to set up a privacy feature (either a PIN or a more complex Password).
-//     - Flexible Security Method Choice: Users are empowered to select their preferred security method: a simple PIN (requiring only digits) or a stronger Password (enforcing a combination of letters, digits, and special characters for increased security). The system includes basic validation to guide users in creating valid formats.
-//     - Security Code Confirmation: During the initial setup, users are required to re-enter their chosen security code for verification. This crucial step prevents accidental typos from locking them out of their journal.
-//     - Persistent Security Settings: The chosen security code (PIN or Password) along with a user-defined username is securely stored in a dedicated file named 'privacy.txt'. This file is designed to be excluded from version control systems (like Git) to safeguard user privacy, especially when the code is shared or deployed on different machines.
-//     - Mandatory Access Control: Once security settings are established, the program strictly requires the security code for initial access immediately upon startup. Furthermore, it mandates security verification for critical data operations, such as loading and saving the journal, ensuring that sensitive personal information is exclusively accessed by an authorized user.
-//     - Personalized User Welcome: The application identifies and greets returning users by their previously set username (e.g., "Welcome back, Malunda!"), creating a more personal and engaging experience.
+//     - This addresses the critical concern of unauthorized access to personal thoughts,
+//       a significant barrier to digital journaling.
+//     - First-Time User Onboarding: Upon the very first launch, the program intelligently
+//       detects if no security settings have been established. It then warmly welcomes new users
+//       and offers them the option to set up a privacy feature (either a PIN or a more complex Password).
+//     - Flexible Security Method Choice: Users are empowered to select their preferred security method:
+//       a simple PIN (requiring only digits) or a stronger Password (enforcing a combination of letters,
+//       digits, and special characters for increased security). The system includes basic validation
+//       to guide users in creating valid formats.
+//     - Security Code Confirmation: During the initial setup, users are required to re-enter their
+//       chosen security code for verification. This crucial step prevents accidental typos from
+//       locking them out of their journal.
+//     - Persistent Security Settings: The chosen security code (PIN or Password) along with a user-defined
+//       username is securely stored in a dedicated file named 'privacy.txt'. This file is designed to be
+//       excluded from version control systems (like Git) to safeguard user privacy, especially when the
+//       code is shared or deployed on different machines.
+//     - Mandatory Access Control: Once security settings are established, the program strictly requires
+//       the security code for initial access immediately upon startup. Furthermore, it mandates security
+//       verification for critical data operations, such as loading and saving the journal, ensuring that
+//       sensitive personal information is exclusively accessed by an authorized user.
+//     - Personalized User Welcome: The application identifies and greets returning users by
+//       their previously set username (e.g., "Welcome back, Malunda!"), creating a more personal
+//       and engaging experience.
 //
 // 2.  Enhanced Journal Entry Data:
 //     - Beyond merely recording the date, each journal entry now captures and stores additional valuable context:
-//         - Precise Time of Entry: The exact time of day when the entry was written is recorded, providing a more detailed timeline of thoughts and events.
-//         - User's Emotional State: The user's reported mood at the time of writing is captured, adding an important emotional dimension to the reflection and allowing for future analysis of mood patterns.
+//         - Precise Time of Entry: The exact time of day when the entry was written is recorded,
+//           providing a more detailed timeline of thoughts and events.
+//         - User's Emotional State: The user's reported mood at the time of writing is captured,
+//           adding an important emotional dimension to the reflection and allowing for future
+//           analysis of mood patterns.
 //
 // 3.  Improved User Interface and Experience:
-//     - Prominent and Stylized Header: A visually striking header, "MY DIGIJOURNAL," is consistently displayed at the top of every main screen. This header features bold, blue text perfectly centered within yellow decorative borders, giving the application a polished and professional appearance.
-//     - Clear Screen Navigation: The console screen is automatically cleared before displaying each new selection or "page." This creates a distinct visual separation between different application states, reducing visual clutter and making navigation feel more intuitive.
-//     - Dynamic Page Titles: Each "page" within the application dynamically updates a sub-header to clearly indicate the user's current location (e.g., "Main Menu," "Write Entry," "Display Journal"). This helps users orient themselves within the program.
-//     - Organized and Stylized Entry Display: Individual journal entries are presented in a highly organized, multi-line format. This includes clear, bolded labels for "Date:", "Time:", "Mood:", "Prompt:", and "Entry:", significantly improving readability compared to a single-line representation.
-//     - Logical Mood Input Flow: Within the "Write" process, the program is designed to ask for the user's mood as the very first input. This follows a natural journaling progression, capturing the emotional context before diving into the entry details.
-//     - "Once-a-Day Mood" Convenience: The application incorporates intelligent logic to manage mood input. Users are prompted for their mood only once per day; for subsequent entries on the same day, the previously recorded mood is silently reused, enhancing convenience and reducing repetitive input.
-//     - Multiple Prompts and "Keep Writing" Feature (Planned Integration): The "Write" functionality is designed to be extended to allow users to respond to multiple prompts within a single session. This will involve offering a choice of several prompts and providing options to "keep writing" (request more prompts) until they are "done." This feature aims to make journaling less overwhelming by offering flexibility and choice.
+//     - Prominent and Stylized Header: A visually striking header, "MY DIGIJOURNAL," is consistently
+//       displayed at the top of every main screen. This header features bold, blue text perfectly
+//       centered within blue decorative borders, giving the application a polished and professional appearance..
+//     - Dynamic Page Titles: Each "page" within the application dynamically updates a sub-header to clearly
+//       indicate the user's current location (e.g., "Main Menu," "Write Entry," "Display Journal").
+//       This helps users orient themselves within the program.
+//     - Organized and Stylized Entry Display: Individual journal entries are presented in a highly organized,
+//       multi-line format. This includes clear, bolded labels for "Date:", "Time:", "Mood:", "Prompt:",
+//       and "Entry:", significantly improving readability compared to a single-line representation.
+//     - Logical Mood Input Flow: Within the "Write" process, the program is designed to ask for the user's
+//       mood as the very first input. This follows a natural journaling progression, capturing the emotional
+//       context before diving into the entry details.
+//     - "Once-a-Day Mood" Convenience: The application incorporates intelligent logic to manage mood input.
+//       Users are prompted for their mood only once per day; for subsequent entries on the same day,
+//       the previously recorded mood is silently reused, enhancing convenience and reducing repetitive input.
+//    - Random Prompt Generation: The program includes a sophisticated prompt generator that provides
+//      users with a variety of creative prompts to inspire their writing. This feature aims to combat
+//      writer's block and encourage more frequent journaling by offering fresh ideas and perspectives.
 //
-// These comprehensive enhancements collectively provide users with a more secure, personalized, and engaging journaling experience, actively encouraging more consistent and private reflection.
+// These comprehensive enhancements collectively provide users with a more secure, personalized,
+// and engaging journaling experience, actively encouraging more consistent and private reflection.
 
 class Program
 {
