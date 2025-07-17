@@ -1,4 +1,4 @@
-// Scripture.cs
+
 // Represents the entire scripture, including its reference and text,
 // managing the hiding and displaying of words.
 public class Scripture

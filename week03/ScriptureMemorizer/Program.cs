@@ -8,7 +8,6 @@ public class Program
     // 3. Bible Testament Selection: If "Bible" is chosen, prompts for Old or New Testament.
     // 4. Bordered Header: Displays "========= SCRIPTURE MEMORIZER =========" at the top.
     // 5. Random Selection: A random scripture is chosen from the selected category.
-    // 6. Hiding Logic: Only hides words that are not already hidden (stretch challenge from previous activity).
     // -----------------------------
 
     private static Random _globalRandom = new Random(); // Use a single Random instance
