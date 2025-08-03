@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Collections.Generic; // Required for List
+using System.Linq; // Required for LINQ, though not explicitly used in this snippet, good practice to have if other parts might use it.
 
 public static class UIHelper
 {
@@ -9,7 +10,7 @@ public static class UIHelper
     public static void DisplayHeader(string subheader)
     {
         Console.WriteLine(GetColoredText("==========================", ConsoleColor.Yellow));
-        Console.WriteLine(GetColoredText("          DigiHealth          ", ConsoleColor.Blue));
+        Console.WriteLine(GetColoredText("         DigiHealth         ", ConsoleColor.Blue));
         Console.WriteLine(GetColoredText("==========================", ConsoleColor.Yellow));
         Console.WriteLine($"   {subheader}\n");
     }
@@ -24,43 +25,36 @@ public static class UIHelper
         return coloredText;
     }
 
-    // --- Spinner Animation ---
+    
     public static void ShowSpinner(int seconds)
     {
-        List<string> spinnerFrames = new List<string> { "|", "/", "-", "\\" };
+        Console.WriteLine("  Preparing activity:"); // Initial message before spinner starts
+        string[] frames = { "⏰ .", "⏰ ..", "⏰ ..." }; // Visual frames for the "spinner"
         DateTime startTime = DateTime.Now;
-        int i = 0;
-        while ((DateTime.Now - startTime).TotalSeconds < seconds)
+        int frameIndex = 0;
+        int animationInterval = 400; // milliseconds between frame updates
+
+        while (DateTime.Now - startTime < TimeSpan.FromSeconds(seconds))
         {
-            Console.Write(spinnerFrames[i]);
-            Thread.Sleep(250);
-            Console.Write("\b"); // Attempt to move cursor back (though it may not work in all terminals)
-            i++;
-            if (i >= spinnerFrames.Count)
-            {
-                i = 0;
-            }
+            Console.WriteLine($"  {frames[frameIndex]}"); // Each frame prints on a new line
+            frameIndex = (frameIndex + 1) % frames.Length;
+            Thread.Sleep(animationInterval);
         }
-        // Ensure the spinner character is cleared
-        Console.Write(" "); // Overwrite last spinner char with a space
-        Console.Write("\b"); // Move cursor back again to hide the space
+        Console.WriteLine(" "); // Add an extra newline for separation after the spinner animation
     }
 
-    // --- Countdown Timer ---
-    public static void ShowCountdown(int seconds)
+        public static void ShowCountdown(int seconds)
     {
         for (int i = seconds; i > 0; i--)
         {
-            Console.Write($"{i} ");
-            Thread.Sleep(1000);
-            // Clear the number by overwriting with spaces and backspacing
-            if (i < 10) Console.Write("\b\b"); // For single digit numbers
-            else Console.Write("\b\b\b"); // For double digit numbers
+            Console.WriteLine($"  {i}"); // Print each number on a new line, with some indentation
+            Thread.Sleep(1000); // 1-second pause
         }
+        Console.WriteLine(" "); // Add an extra newline for separation after countdown
     }
 
     // --- Simple Dot Loading Animation (for initial startup, most compatible) ---
-    public static void ShowSimpleDotAnimation(int seconds)
+        public static void ShowSimpleDotAnimation(int seconds)
     {
         DateTime startTime = DateTime.Now;
         while ((DateTime.Now - startTime).TotalSeconds < seconds)
