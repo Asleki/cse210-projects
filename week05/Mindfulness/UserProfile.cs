@@ -1,338 +1,330 @@
-// UserProfile.cs
 using System;
-using System.Collections.Generic; // Required for List<T>
-using System.IO; // Required for File I/O
-using System.Linq; // Required for LINQ methods like .Any()
-using System.Threading; // Added for Thread.Sleep
+using System.Collections.Generic;
+using System.IO; // Required for file operations
+using System.Text.Json; // Required for JSON serialization
 
+// Represents the user's profile, storing personal, health, and address information.
+// This is an exceeding requirement feature, providing personalized data management.
 public class UserProfile
 {
-    // --- Attributes ---
-    private string _fullName;
-    private string _username;
-    private List<string> _healthConditions;
-    private string _bloodType;
-    private List<string> _allergies;
-    private List<string> _currentMedications;
-    private bool _isOrganDonor;
-    private List<Address> _addresses; // A list to hold multiple Address objects
+    // Properties for personal information.
+    public string FullName { get; set; } = "Not Set";
+    public string Username { get; set; } = "Guest";
 
-    private string _profileFilePath = "user_profile.txt"; // File to save/load profile data
+    // Properties for health information.
+    public string BloodType { get; set; } = "Not Set";
+    public bool IsOrganDonor { get; set; } = false;
+    public List<string> HealthConditions { get; set; } = new List<string>();
+    public List<string> Allergies { get; set; } = new List<string>();
+    public List<string> CurrentMedications { get; set; } = new List<string>();
 
-    // --- Constructor ---
+    // List to store multiple addresses for the user.
+    public List<Address> Addresses { get; set; } = new List<Address>();
+
+    // Constructor initializes lists to prevent null reference exceptions.
     public UserProfile()
     {
-        _healthConditions = new List<string>();
-        _allergies = new List<string>();
-        _currentMedications = new List<string>();
-        _addresses = new List<Address>();
-        LoadProfile(); // Attempt to load profile on creation
+        // Lists are initialized in property definitions for conciseness.
     }
 
-    // --- Methods for Profile Management ---
-
-    // Loads user profile data from a text file.
-    public void LoadProfile()
-    {
-        if (File.Exists(_profileFilePath))
-        {
-            try
-            {
-                string[] lines = File.ReadAllLines(_profileFilePath);
-                foreach (string line in lines)
-                {
-                    if (line.StartsWith("FullName:")) _fullName = line.Substring("FullName:".Length);
-                    else if (line.StartsWith("Username:")) _username = line.Substring("Username:".Length);
-                    else if (line.StartsWith("HealthConditions:")) _healthConditions = line.Substring("HealthConditions:".Length).Split(';').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                    else if (line.StartsWith("BloodType:")) _bloodType = line.Substring("BloodType:".Length);
-                    else if (line.StartsWith("Allergies:")) _allergies = line.Substring("Allergies:".Length).Split(';').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                    else if (line.StartsWith("CurrentMedications:")) _currentMedications = line.Substring("CurrentMedications:".Length).Split(';').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                    else if (line.StartsWith("IsOrganDonor:")) bool.TryParse(line.Substring("IsOrganDonor:".Length), out _isOrganDonor);
-                    else if (line.StartsWith("Address:"))
-                    {
-                        Address addr = Address.FromString(line.Substring("Address:".Length));
-                        if (addr != null) _addresses.Add(addr);
-                    }
-                }
-                Console.WriteLine(UIHelper.GetColoredText("\nℹ️ Profile loaded successfully!", ConsoleColor.Green));
-                Thread.Sleep(1500);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(UIHelper.GetColoredText($"❌ Error loading profile: {ex.Message}", ConsoleColor.Red));
-                Thread.Sleep(2000);
-            }
-        }
-        else
-        {
-            Console.WriteLine(UIHelper.GetColoredText("\nℹ️ No existing profile found. You can set one up in Settings.", ConsoleColor.Yellow));
-            Thread.Sleep(2000);
-        }
-    }
-
-    // Saves current user profile data to a text file.
-    public void SaveProfile()
-    {
-        try
-        {
-            using (StreamWriter writer = new StreamWriter(_profileFilePath))
-            {
-                writer.WriteLine($"FullName:{_fullName}");
-                writer.WriteLine($"Username:{_username}");
-                writer.WriteLine($"HealthConditions:{string.Join(";", _healthConditions)}");
-                writer.WriteLine($"BloodType:{_bloodType}");
-                writer.WriteLine($"Allergies:{string.Join(";", _allergies)}");
-                writer.WriteLine($"CurrentMedications:{string.Join(";", _currentMedications)}");
-                writer.WriteLine($"IsOrganDonor:{_isOrganDonor}");
-                foreach (Address addr in _addresses)
-                {
-                    writer.WriteLine($"Address:{addr.ToString()}");
-                }
-            }
-            Console.WriteLine(UIHelper.GetColoredText("\n✅ Profile saved successfully!", ConsoleColor.Green));
-            Thread.Sleep(1500);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(UIHelper.GetColoredText($"❌ Error saving profile: {ex.Message}", ConsoleColor.Red));
-            Thread.Sleep(2000);
-        }
-    }
-
-    // --- UI for Settings Menu ---
+    // Displays the main settings menu and handles user choices within it.
+    // This is part of the exceeding requirements for settings management.
     public void DisplaySettingsMenu()
     {
         string choice = "";
         while (choice != "0")
         {
-            Console.WriteLine("\n\n"); // Replaced Console.Clear() with spacing
-            UIHelper.DisplayHeader("Settings");
-            Console.WriteLine($"Current User: {(_username ?? "Not set")}");
+            UIHelper.PrintHeader("DigiHealth", "Settings");
+            Console.WriteLine("Manage your profile:");
+            UIHelper.PrintColor("  1. ", ConsoleColor.Green); Console.WriteLine("View Profile");
+            UIHelper.PrintColor("  2. ", ConsoleColor.Green); Console.WriteLine("Edit Personal Info");
+            UIHelper.PrintColor("  3. ", ConsoleColor.Green); Console.WriteLine("Edit Health Info");
+            UIHelper.PrintColor("  4. ", ConsoleColor.Green); Console.WriteLine("Manage Addresses");
+            UIHelper.PrintColor("  0. ", ConsoleColor.Green); Console.WriteLine("Back to Main Menu");
+            Console.WriteLine();
 
-            Console.WriteLine(UIHelper.GetColoredText("1. Set Full Name", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("2. Set Username", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("3. Manage Addresses", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("4. Manage Health Info", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("0. Back to Main Menu", ConsoleColor.Green));
-
-            Console.WriteLine(UIHelper.GetColoredText("--------------------------", ConsoleColor.Yellow));
-            Console.Write("Select an option: ");
+            UIHelper.PrintColor("Enter your choice: ", ConsoleColor.Yellow);
             choice = Console.ReadLine();
 
             switch (choice)
             {
-                case "1": SetFullName(); break;
-                case "2": SetUsername(); break;
-                case "3": ManageAddresses(); break;
-                case "4": ManageHealthInfo(); break;
-                case "0": SaveProfile(); Console.WriteLine("Returning to Main Menu..."); break;
-                default: Console.WriteLine(UIHelper.GetColoredText("Invalid choice.", ConsoleColor.Red)); Thread.Sleep(1000); break;
+                case "1": ViewProfile(); break;
+                case "2": EditPersonalInfo(); break;
+                case "3": EditHealthInfo(); break;
+                case "4": ManageAddresses(); break;
+                case "0": break; // Exit loop
+                default: UIHelper.PrintColor("Invalid choice. Please enter a number from the menu.\n", ConsoleColor.Red); break;
             }
+
             if (choice != "0")
             {
-                Console.WriteLine("\nPress any key to continue...");
+                UIHelper.PrintColor("\nPress Enter to continue...", ConsoleColor.Yellow);
                 Console.ReadLine();
+            }
+        }
+        SaveProfile(); // Save profile changes when exiting settings
+    }
+
+    // Displays all current profile information.
+    private void ViewProfile()
+    {
+        UIHelper.PrintHeader("Settings", "View Profile");
+        UIHelper.PrintColor("--- Personal Information ---\n", ConsoleColor.Cyan);
+        Console.WriteLine($"Full Name: {FullName}");
+        Console.WriteLine($"Username: {Username}");
+        Console.WriteLine();
+
+        UIHelper.PrintColor("--- Health Information ---\n", ConsoleColor.Cyan);
+        Console.WriteLine($"Blood Type: {BloodType}");
+        Console.WriteLine($"Organ Donor: {(IsOrganDonor ? "Yes" : "No")}");
+        Console.WriteLine($"Health Conditions: {(HealthConditions.Count == 0 ? "None" : string.Join(", ", HealthConditions))}");
+        Console.WriteLine($"Allergies: {(Allergies.Count == 0 ? "None" : string.Join(", ", Allergies))}");
+        Console.WriteLine($"Current Medications: {(CurrentMedications.Count == 0 ? "None" : string.Join(", ", CurrentMedications))}");
+        Console.WriteLine();
+
+        UIHelper.PrintColor("--- Addresses ---\n", ConsoleColor.Cyan);
+        if (Addresses.Count == 0)
+        {
+            Console.WriteLine("No addresses saved.");
+        }
+        else
+        {
+            for (int i = 0; i < Addresses.Count; i++)
+            {
+                Console.WriteLine($"  {i + 1}. {Addresses[i].ToString()}");
             }
         }
     }
 
-    // --- Private Helper Methods for Setting Profile Details ---
-    private void SetFullName()
+    // Allows the user to edit their personal information.
+    private void EditPersonalInfo()
     {
-        Console.Write("Enter your full name: ");
-        _fullName = Console.ReadLine();
-        Console.WriteLine(UIHelper.GetColoredText("Full Name updated.", ConsoleColor.Green));
+        UIHelper.PrintHeader("Settings", "Edit Personal Info");
+        UIHelper.PrintColor($"Current Full Name: {FullName}\n", ConsoleColor.White);
+        UIHelper.PrintColor("Enter new Full Name (or press Enter to keep current): ", ConsoleColor.Yellow);
+        string newFullName = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newFullName))
+        {
+            FullName = newFullName;
+            UIHelper.PrintColor("Full Name updated.", ConsoleColor.Green);
+        }
+
+        UIHelper.PrintColor($"Current Username: {Username}\n", ConsoleColor.White);
+        UIHelper.PrintColor("Enter new Username (or press Enter to keep current): ", ConsoleColor.Yellow);
+        string newUsername = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newUsername))
+        {
+            Username = newUsername;
+            UIHelper.PrintColor("Username updated.", ConsoleColor.Green);
+        }
+        SaveProfile(); // Save changes immediately
     }
 
-    private void SetUsername()
+    // Allows the user to edit their health information.
+    private void EditHealthInfo()
     {
-        Console.Write("Enter your username: ");
-        _username = Console.ReadLine();
-        Console.WriteLine(UIHelper.GetColoredText("Username updated.", ConsoleColor.Green));
+        UIHelper.PrintHeader("Settings", "Edit Health Info");
+
+        UIHelper.PrintColor($"Current Blood Type: {BloodType}\n", ConsoleColor.White);
+        UIHelper.PrintColor("Enter new Blood Type (e.g., A+, O-, or press Enter to keep current): ", ConsoleColor.Yellow);
+        string newBloodType = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newBloodType))
+        {
+            BloodType = newBloodType.ToUpper(); // Standardize to uppercase
+            UIHelper.PrintColor("Blood Type updated.", ConsoleColor.Green);
+        }
+
+        UIHelper.PrintColor($"Current Organ Donor Status: {(IsOrganDonor ? "Yes" : "No")}\n", ConsoleColor.White);
+        UIHelper.PrintColor("Are you an Organ Donor? (Y/N, or press Enter to keep current): ", ConsoleColor.Yellow);
+        string newIsOrganDonor = Console.ReadLine()?.ToLower();
+        if (newIsOrganDonor == "y")
+        {
+            IsOrganDonor = true;
+            UIHelper.PrintColor("Organ Donor status updated to Yes.", ConsoleColor.Green);
+        }
+        else if (newIsOrganDonor == "n")
+        {
+            IsOrganDonor = false;
+            UIHelper.PrintColor("Organ Donor status updated to No.", ConsoleColor.Green);
+        }
+
+        HealthConditions = EditStringList("Health Conditions", HealthConditions);
+        Allergies = EditStringList("Allergies", Allergies);
+        CurrentMedications = EditStringList("Current Medications", CurrentMedications);
+
+        SaveProfile(); // Save changes immediately
     }
 
+    // Helper method to edit lists of strings (e.g., health conditions, allergies).
+    private List<string> EditStringList(string listName, List<string> currentList)
+    {
+        UIHelper.PrintColor($"\n--- Edit {listName} ---\n", ConsoleColor.Cyan);
+        Console.WriteLine($"Current {listName}: {(currentList.Count == 0 ? "None" : string.Join(", ", currentList))}");
+        UIHelper.PrintColor($"Enter new {listName} (comma-separated, or press Enter to keep current): ", ConsoleColor.Yellow);
+        string input = Console.ReadLine();
+
+        if (!string.IsNullOrWhiteSpace(input))
+        {
+            // Split by comma, remove empty entries, trim whitespace from each.
+            List<string> newList = new List<string>(input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList());
+            UIHelper.PrintColor($"{listName} updated.", ConsoleColor.Green);
+            return newList;
+        }
+        return currentList; // Return original list if input is empty
+    }
+
+    // Manages adding and removing addresses from the user's profile.
     private void ManageAddresses()
     {
         string choice = "";
         while (choice != "0")
         {
-            Console.WriteLine("\n\n"); 
-            UIHelper.DisplayHeader("Manage Addresses");
-            if (_addresses.Any())
+            UIHelper.PrintHeader("Settings", "Manage Addresses");
+            if (Addresses.Count == 0)
             {
-                Console.WriteLine("Your current addresses:");
-                for (int i = 0; i < _addresses.Count; i++)
-                {
-                    Console.WriteLine($"{i + 1}. {_addresses[i].GetFullAddress()}");
-                }
+                Console.WriteLine("No addresses saved.");
             }
             else
             {
-                Console.WriteLine("No addresses added yet.");
+                UIHelper.PrintColor("Your Saved Addresses:\n", ConsoleColor.Cyan);
+                for (int i = 0; i < Addresses.Count; i++)
+                {
+                    Console.WriteLine($"  {i + 1}. {Addresses[i].ToString()}");
+                }
             }
+            Console.WriteLine("\nOptions:");
+            UIHelper.PrintColor("  1. ", ConsoleColor.Green); Console.WriteLine("Add New Address");
+            UIHelper.PrintColor("  2. ", ConsoleColor.Green); Console.WriteLine("Remove Address");
+            UIHelper.PrintColor("  0. ", ConsoleColor.Green); Console.WriteLine("Back to Settings Menu");
+            Console.WriteLine();
 
-            Console.WriteLine(UIHelper.GetColoredText("\n1. Add New Address", ConsoleColor.Green));
-            if (_addresses.Any())
-            {
-                Console.WriteLine(UIHelper.GetColoredText("2. Remove Address", ConsoleColor.Green));
-            }
-            Console.WriteLine(UIHelper.GetColoredText("0. Back to Settings", ConsoleColor.Green));
-
-            Console.WriteLine(UIHelper.GetColoredText("--------------------------", ConsoleColor.Yellow));
-            Console.Write("Select an option: ");
+            UIHelper.PrintColor("Enter your choice: ", ConsoleColor.Yellow);
             choice = Console.ReadLine();
 
             switch (choice)
             {
-                case "1": AddNewAddress(); break;
-                case "2":
-                    if (_addresses.Any()) RemoveAddress();
-                    else Console.WriteLine(UIHelper.GetColoredText("No addresses to remove.", ConsoleColor.Red));
-                    break;
-                case "0": Console.WriteLine("Returning to Settings..."); break;
-                default: Console.WriteLine(UIHelper.GetColoredText("Invalid choice.", ConsoleColor.Red)); break;
+                case "1": AddAddress(); break;
+                case "2": RemoveAddress(); break;
+                case "0": break; // Exit loop
+                default: UIHelper.PrintColor("Invalid choice. Please enter a number from the menu.\n", ConsoleColor.Red); break;
             }
-            Thread.Sleep(1000); // Small pause for feedback
+
+            if (choice != "0")
+            {
+                UIHelper.PrintColor("\nPress Enter to continue...", ConsoleColor.Yellow);
+                Console.ReadLine();
+            }
         }
+        SaveProfile(); // Save addresses changes when exiting management
     }
 
-    private void AddNewAddress()
+    // Guides the user through adding a new address to their profile.
+    private void AddAddress()
     {
-        Console.Write("Enter Street Address: "); string street = Console.ReadLine();
-        Console.Write("Enter City: "); string city = Console.ReadLine();
-        Console.Write("Enter State/Province: "); string state = Console.ReadLine();
-        Console.Write("Enter Zip Code: "); string zip = Console.ReadLine();
-        Console.Write("Enter Country: "); string country = Console.ReadLine();
-        Console.Write("Enter Address Type (e.g., Home, Work, School, Other): "); string type = Console.ReadLine();
+        UIHelper.PrintHeader("Addresses", "Add New Address");
+        UIHelper.PrintColor("Enter Address Type (e.g., Home, Work, School, Other): ", ConsoleColor.Yellow);
+        string type = Console.ReadLine()?.Trim() ?? "Other";
+        UIHelper.PrintColor("Enter Street: ", ConsoleColor.Yellow);
+        string street = Console.ReadLine()?.Trim() ?? "";
+        UIHelper.PrintColor("Enter City: ", ConsoleColor.Yellow);
+        string city = Console.ReadLine()?.Trim() ?? "";
+        UIHelper.PrintColor("Enter State/Province: ", ConsoleColor.Yellow);
+        string state = Console.ReadLine()?.Trim() ?? "";
+        UIHelper.PrintColor("Enter Zip/Postal Code: ", ConsoleColor.Yellow);
+        string zip = Console.ReadLine()?.Trim() ?? "";
+        UIHelper.PrintColor("Enter Country: ", ConsoleColor.Yellow);
+        string country = Console.ReadLine()?.Trim() ?? "";
 
-        _addresses.Add(new Address(street, city, state, zip, country, type));
-        Console.WriteLine(UIHelper.GetColoredText("Address added.", ConsoleColor.Green));
+        Addresses.Add(new Address(type, street, city, state, zip, country));
+        UIHelper.PrintColor("\nAddress added successfully!", ConsoleColor.Green);
+        SaveProfile(); // Save changes immediately
     }
 
+    // Allows the user to remove an existing address from their profile.
     private void RemoveAddress()
     {
-        Console.Write("Enter the number of the address to remove: ");
-        if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= _addresses.Count)
+        UIHelper.PrintHeader("Addresses", "Remove Address");
+        if (Addresses.Count == 0)
         {
-            _addresses.RemoveAt(index - 1);
-            Console.WriteLine(UIHelper.GetColoredText("Address removed.", ConsoleColor.Green));
-        }
-        else
-        {
-            Console.WriteLine(UIHelper.GetColoredText("Invalid number.", ConsoleColor.Red));
-        }
-    }
-
-    private void ManageHealthInfo()
-    {
-        string choice = "";
-        while (choice != "0")
-        {
-            Console.WriteLine("\n\n"); 
-            UIHelper.DisplayHeader("Health Info");
-            Console.WriteLine($"Blood Type: {(_bloodType ?? "Not set")}");
-            Console.WriteLine($"Organ Donor: {(_isOrganDonor ? "Yes" : "No")}");
-            Console.WriteLine($"Conditions: {(_healthConditions.Any() ? string.Join(", ", _healthConditions) : "None")}");
-            Console.WriteLine($"Allergies: {(_allergies.Any() ? string.Join(", ", _allergies) : "None")}");
-            Console.WriteLine($"Medications: {(_currentMedications.Any() ? string.Join(", ", _currentMedications) : "None")}");
-
-            Console.WriteLine(UIHelper.GetColoredText("\n1. Set Blood Type", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("2. Set Organ Donor Status", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("3. Add Health Condition", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("4. Remove Health Condition", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("5. Add Allergy", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("6. Remove Allergy", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("7. Add Medication", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("8. Remove Medication", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("0. Back to Settings", ConsoleColor.Green));
-
-            Console.WriteLine(UIHelper.GetColoredText("--------------------------", ConsoleColor.Yellow));
-            Console.Write("Select an option: ");
-            choice = Console.ReadLine();
-
-            switch (choice)
-            {
-                case "1": SetBloodType(); break;
-                case "2": SetOrganDonorStatus(); break;
-                case "3": AddListItem(_healthConditions, "health condition"); break;
-                case "4": RemoveListItem(_healthConditions, "health condition"); break;
-                case "5": AddListItem(_allergies, "allergy"); break;
-                case "6": RemoveListItem(_allergies, "allergy"); break;
-                case "7": AddListItem(_currentMedications, "medication"); break;
-                case "8": RemoveListItem(_currentMedications, "medication"); break;
-                case "0": Console.WriteLine("Returning to Settings..."); break;
-                default: Console.WriteLine(UIHelper.GetColoredText("Invalid choice.", ConsoleColor.Red)); break;
-            }
-            Thread.Sleep(1000);
-        }
-    }
-
-    private void SetBloodType()
-    {
-        Console.Write("Enter your Blood Type (e.g., A+, O-): ");
-        _bloodType = Console.ReadLine().ToUpper();
-        Console.WriteLine(UIHelper.GetColoredText("Blood Type updated.", ConsoleColor.Green));
-    }
-
-    private void SetOrganDonorStatus()
-    {
-        Console.Write("Are you an Organ Donor? (yes/no): ");
-        string input = Console.ReadLine().ToLower();
-        _isOrganDonor = (input == "yes");
-        Console.WriteLine(UIHelper.GetColoredText("Organ Donor status updated.", ConsoleColor.Green));
-    }
-
-    // Generic helper for adding items to lists (conditions, allergies, medications)
-    private void AddListItem(List<string> list, string itemType)
-    {
-        Console.Write($"Enter {itemType} to add: ");
-        string item = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(item) && !list.Contains(item))
-        {
-            list.Add(item);
-            Console.WriteLine(UIHelper.GetColoredText($"{itemType} added.", ConsoleColor.Green));
-        }
-        else if (list.Contains(item))
-        {
-            Console.WriteLine(UIHelper.GetColoredText($"{itemType} already exists.", ConsoleColor.Yellow));
-        }
-        else
-        {
-            Console.WriteLine(UIHelper.GetColoredText("Invalid input.", ConsoleColor.Red));
-        }
-    }
-
-    // Generic helper for removing items from lists
-    private void RemoveListItem(List<string> list, string itemType)
-    {
-        if (!list.Any())
-        {
-            Console.WriteLine(UIHelper.GetColoredText($"No {itemType}s to remove.", ConsoleColor.Yellow));
+            Console.WriteLine("No addresses to remove.");
             return;
         }
 
-        Console.WriteLine($"Current {itemType}s:");
-        for (int i = 0; i < list.Count; i++)
+        UIHelper.PrintColor("Select the number of the address to remove:\n", ConsoleColor.Yellow);
+        for (int i = 0; i < Addresses.Count; i++)
         {
-            Console.WriteLine($"{i + 1}. {list[i]}");
+            Console.WriteLine($"  {i + 1}. {Addresses[i].ToString()}");
         }
-        Console.Write($"Enter the number of the {itemType} to remove: ");
-        if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= list.Count)
+
+        int choice;
+        bool isValidChoice = false;
+        do
         {
-            string removedItem = list[index - 1];
-            list.RemoveAt(index - 1);
-            Console.WriteLine(UIHelper.GetColoredText($"{removedItem} removed.", ConsoleColor.Green));
-        }
-        else
-        {
-            Console.WriteLine(UIHelper.GetColoredText("Invalid number.", ConsoleColor.Red));
-        }
+            UIHelper.PrintColor($"Enter choice (1-{Addresses.Count}): ", ConsoleColor.Yellow);
+            string input = Console.ReadLine();
+            isValidChoice = int.TryParse(input, out choice) && choice > 0 && choice <= Addresses.Count;
+
+            if (!isValidChoice)
+            {
+                UIHelper.PrintColor("Invalid choice. Please enter a valid number.\n", ConsoleColor.Red);
+            }
+        } while (!isValidChoice);
+
+        string removedAddress = Addresses[choice - 1].ToString();
+        Addresses.RemoveAt(choice - 1);
+        UIHelper.PrintColor($"\nAddress '{removedAddress}' removed.", ConsoleColor.Green);
+        SaveProfile(); // Save changes immediately
     }
 
-    // --- Getters for MoodCheckIn to use ---
-    public string GetUsername() { return _username; }
-    public List<Address> GetAddressesByType(string type)
+    // Loads user profile data from a JSON file (user_profile.json).
+    // This supports persistent user settings, an exceeding requirement.
+    public void LoadProfile()
     {
-        return _addresses.Where(a => a.GetAddressType().Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
+        string filePath = "user_profile.json";
+        if (File.Exists(filePath))
+        {
+            try
+            {
+                string jsonString = File.ReadAllText(filePath);
+                UserProfile loadedProfile = JsonSerializer.Deserialize<UserProfile>(jsonString);
+                // Transfer loaded data to the current instance
+                if (loadedProfile != null)
+                {
+                    FullName = loadedProfile.FullName;
+                    Username = loadedProfile.Username;
+                    BloodType = loadedProfile.BloodType;
+                    IsOrganDonor = loadedProfile.IsOrganDonor;
+                    HealthConditions = loadedProfile.HealthConditions ?? new List<string>();
+                    Allergies = loadedProfile.Allergies ?? new List<string>();
+                    CurrentMedications = loadedProfile.CurrentMedications ?? new List<string>();
+                    Addresses = loadedProfile.Addresses ?? new List<Address>();
+                }
+                // Console.WriteLine("Profile loaded successfully."); // For debug
+            }
+            catch (Exception ex)
+            {
+                // If loading fails (e.g., malformed JSON), log error and start with default profile.
+                UIHelper.PrintColor($"Error loading profile: {ex.Message}\nStarting with default profile.", ConsoleColor.Red);
+            }
+        }
+        // else, profile will remain at default initialized values.
+    }
+
+    // Saves current user profile data to a JSON file (user_profile.json).
+    // This supports persistent user settings, an exceeding requirement.
+    public void SaveProfile()
+    {
+        string filePath = "user_profile.json";
+        try
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+            string jsonString = JsonSerializer.Serialize(this, options);
+            File.WriteAllText(filePath, jsonString);
+            // Console.WriteLine("Profile saved successfully."); // For debug
+        }
+        catch (Exception ex)
+        {
+            UIHelper.PrintColor($"Error saving profile: {ex.Message}", ConsoleColor.Red);
+        }
     }
 }

@@ -1,246 +1,256 @@
-// MoodCheckIn.cs
 using System;
-using System.Collections.Generic;
-using System.IO; // For file saving
-using System.Linq; // For .Any()
-using System.Threading; // Added for Thread.Sleep
+using System.IO; // Required for file operations
+using System.Collections.Generic; // Required for List
 
-public class MoodCheckIn
+// Class to handle the Mood Check-in activity.
+// This is an exceeding requirement feature, allowing users to log their mood.
+class MoodCheckIn
 {
-    private UserProfile _userProfile; // To access user data like addresses
-    private string _moodLogFilePath = "mood_notes.txt"; // File to save mood notes
+    // Private field to store a reference to the user's profile.
+    private UserProfile _userProfile;
 
-    // Constructor to inject the UserProfile
+    // Constructor to initialize MoodCheckIn with the current user profile.
     public MoodCheckIn(UserProfile userProfile)
     {
         _userProfile = userProfile;
     }
 
-    // Main method to start the mood check-in process
+    // Starts the mood check-in process, guiding the user through several steps.
     public void StartCheckIn()
     {
-        Console.WriteLine("\n\n"); 
-        UIHelper.DisplayHeader("Mood Check-in");
+        UIHelper.PrintHeader("Mood Check-in", "Start");
+        Console.WriteLine("Let's check in with how you're feeling today.");
 
-        string mood = GetMoodLevel();
+        // Step 1: Get user's general feeling.
+        string feeling = GetFeeling();
+
+        // Step 2: Get specific emotions.
         List<string> emotions = GetEmotions();
+
+        // Step 3: Get location.
         string location = GetLocation();
-        string note = GetAdditionalNote();
+        string specificAddress = ""; // To store specific address if chosen
 
-        SaveMoodData(mood, emotions, location, note);
-
-        Console.WriteLine(UIHelper.GetColoredText("\nMood Check-in complete! Thank you for sharing.", ConsoleColor.Green));
-        UIHelper.ShowSpinner(3); // Short pause before returning
-    }
-
-    // Step 1: Get how the user is feeling today
-    private string GetMoodLevel()
-    {
-        Console.WriteLine("\nHow are you feeling today?");
-        var moodOptions = new Dictionary<string, string>
+        // If location is home, work, or school, prompt for specific address from user profile.
+        if (location == "home" || location == "work" || location == "school")
         {
-            {"1", "Awesome!"},
-            {"2", "Good"},
-            {"3", "Fine"},
-            {"4", "Bad"},
-            {"5", "Terrible"}
-        };
-        UIHelper.PrintMenuOptions(moodOptions, "Select your mood: ");
-        string choice = Console.ReadLine();
+            specificAddress = GetSpecificAddress(location);
+        }
 
-        switch (choice)
+        // Step 4: Get additional notes.
+        string note = GetNotes();
+
+        // Display a summary of the check-in.
+        UIHelper.PrintHeader("Mood Check-in", "Summary");
+        UIHelper.PrintColor($"Feeling: {feeling}\n", ConsoleColor.Green);
+        UIHelper.PrintColor($"Emotions: {string.Join(", ", emotions)}\n", ConsoleColor.Green);
+        UIHelper.PrintColor($"Location: {location}", ConsoleColor.Green);
+        if (!string.IsNullOrEmpty(specificAddress))
         {
-            case "1": return "Awesome!";
-            case "2": return "Good";
-            case "3": return "Fine";
-            case "4": return "Bad";
-            case "5": return "Terrible";
-            default:
-                Console.WriteLine(UIHelper.GetColoredText("Invalid selection. Defaulting to 'Fine'.", ConsoleColor.Yellow));
-                return "Fine";
+            Console.WriteLine($" ({specificAddress})");
+        }
+        else
+        {
+            Console.WriteLine(); // Add newline if no specific address
+        }
+        UIHelper.PrintColor($"Notes: {note}\n", ConsoleColor.Green);
+
+        // Prompt user to save the mood data.
+        UIHelper.PrintColor("\nDo you want to save this mood check-in? (Y/N): ", ConsoleColor.Yellow);
+        string saveChoice = Console.ReadLine()?.ToLower();
+
+        if (saveChoice == "y")
+        {
+            SaveMoodData(feeling, emotions, location, specificAddress, note);
+            UIHelper.PrintColor("\nMood check-in saved!", ConsoleColor.Green);
+            UIHelper.ShowDottedPause(2); // Short pause with dots
+        }
+        else
+        {
+            UIHelper.PrintColor("\nMood check-in not saved.", ConsoleColor.Yellow);
+            UIHelper.ShowDottedPause(2); // Short pause with dots
         }
     }
 
-    // Step 2: Get emotions describing how the user feels
+    // Guides the user to select their general feeling.
+    private string GetFeeling()
+    {
+        string feeling = "";
+        bool isValidChoice = false;
+        do
+        {
+            Console.WriteLine("\nHow are you feeling right now?");
+            Console.WriteLine("  1. Awesome!");
+            Console.WriteLine("  2. Good");
+            Console.WriteLine("  3. Fine");
+            Console.WriteLine("  4. Bad");
+            Console.WriteLine("  5. Terrible");
+            UIHelper.PrintColor("Enter choice (1-5): ", ConsoleColor.Yellow);
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1": feeling = "Awesome!"; isValidChoice = true; break;
+                case "2": feeling = "Good"; isValidChoice = true; break;
+                case "3": feeling = "Fine"; isValidChoice = true; break;
+                case "4": feeling = "Bad"; isValidChoice = true; break;
+                case "5": feeling = "Terrible"; isValidChoice = true; break;
+                default: UIHelper.PrintColor("Invalid choice. Please enter a number from 1 to 5.\n", ConsoleColor.Red); break;
+            }
+        } while (!isValidChoice);
+        return feeling;
+    }
+
+    // Guides the user to select emotions that describe their feeling.
     private List<string> GetEmotions()
     {
         List<string> selectedEmotions = new List<string>();
-        List<string> availableEmotions = new List<string>
+        List<string> commonEmotions = new List<string> { "Calm", "Content", "Relaxed", "Excited", "Happy", "Sad", "Anxious", "Stressed", "Frustrated", "Angry", "Tired", "Hopeful" };
+        
+        UIHelper.PrintColor("\nWhich emotions best describe how you feel? (Type 'done' when finished or 'more' for more options):", ConsoleColor.Cyan);
+        
+        bool finishedSelecting = false;
+        while (!finishedSelecting)
         {
-            "Calm", "Content", "Relaxed", "Excited", "Happy",
-            "Anxious", "Stressed", "Sad", "Angry", "Tired",
-            "Hopeful", "Grateful", "Inspired", "Bored", "Frustrated"
-        }; // Expanded list
-
-        string choice = "";
-        int displayCount = 5; // Number of emotions to display at a time
-        int startIndex = 0;
-
-        while (choice.ToLower() != "n")
-        {
-            Console.WriteLine("\n\n"); 
-            UIHelper.DisplayHeader("Mood Check-in");
-            Console.WriteLine("\nWhich emotions best describe how you feel? (Type numbers, separated by commas, or select options below)");
-
-            var currentOptions = new Dictionary<string, string>();
-            for (int i = 0; i < displayCount && (startIndex + i) < availableEmotions.Count; i++)
+            Console.WriteLine("Available emotions:");
+            for (int i = 0; i < commonEmotions.Count; i++)
             {
-                currentOptions.Add((i + 1).ToString(), availableEmotions[startIndex + i]);
+                Console.WriteLine($"  {i + 1}. {commonEmotions[i]}");
             }
+            Console.WriteLine("  Type 'more' for custom input.");
+            Console.WriteLine("  Type 'done' to finish selecting.");
 
-            // Always add 'M. More' if there are more emotions to show
-            if (startIndex + displayCount < availableEmotions.Count)
+            UIHelper.PrintColor("Enter emotion number or command: ", ConsoleColor.Yellow);
+            string input = Console.ReadLine()?.ToLower();
+
+            if (input == "done")
             {
-                currentOptions.Add("M", "More emotions");
+                finishedSelecting = true;
             }
-            currentOptions.Add("N", "Next (done selecting)");
-
-            UIHelper.PrintMenuOptions(currentOptions, "Your selection(s): ");
-            string input = Console.ReadLine().ToLower().Trim();
-
-            if (input == "m")
+            else if (input == "more")
             {
-                startIndex += displayCount; // Move to next set of emotions
-                if (startIndex >= availableEmotions.Count)
+                UIHelper.PrintColor("Enter custom emotion(s) (comma-separated if multiple): ", ConsoleColor.Yellow);
+                string customInput = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(customInput))
                 {
-                    startIndex = 0; // Loop back to start if exhausted
-                    Console.WriteLine(UIHelper.GetColoredText("Reached end of list. Restarting from beginning.", ConsoleColor.Yellow));
-                    Thread.Sleep(1500);
+                    selectedEmotions.AddRange(customInput.Split(',', StringSplitOptions.RemoveEmptyEntries));
                 }
             }
-            else if (input == "n")
+            else if (int.TryParse(input, out int emotionIndex) && emotionIndex > 0 && emotionIndex <= commonEmotions.Count)
             {
-                choice = "n"; // Exit loop
+                string emotion = commonEmotions[emotionIndex - 1];
+                if (!selectedEmotions.Contains(emotion))
+                {
+                    selectedEmotions.Add(emotion);
+                    UIHelper.PrintColor($"'{emotion}' added. Current: {string.Join(", ", selectedEmotions)}\n", ConsoleColor.Green);
+                }
+                else
+                {
+                    UIHelper.PrintColor($"'{emotion}' already selected.\n", ConsoleColor.Yellow);
+                }
             }
             else
             {
-                string[] selections = input.Split(',');
-                foreach (string s in selections)
-                {
-                    if (int.TryParse(s.Trim(), out int num) && num > 0 && num <= displayCount)
-                    {
-                        int actualIndex = startIndex + (num - 1);
-                        if (actualIndex < availableEmotions.Count)
-                        {
-                            string emotion = availableEmotions[actualIndex];
-                            if (!selectedEmotions.Contains(emotion))
-                            {
-                                selectedEmotions.Add(emotion);
-                                Console.WriteLine(UIHelper.GetColoredText($"'{emotion}' added.", ConsoleColor.Green));
-                            }
-                            else
-                            {
-                                Console.WriteLine(UIHelper.GetColoredText($"'{emotion}' already selected.", ConsoleColor.Yellow));
-                            }
-                        }
-                    }
-                }
-                Thread.Sleep(500); // Small pause for feedback
+                UIHelper.PrintColor("Invalid input. Please enter a valid number, 'done', or 'more'.\n", ConsoleColor.Red);
             }
+            Console.WriteLine(); // Spacing
         }
         return selectedEmotions;
     }
 
-    // Step 3: Get the user's current location
+    // Guides the user to select their current location.
     private string GetLocation()
     {
-        Console.WriteLine("\n\n"); 
-        UIHelper.DisplayHeader("Mood Check-in");
-        Console.WriteLine("\nWhere are you now?");
-
-        var locationOptions = new Dictionary<string, string>
+        string location = "";
+        bool isValidChoice = false;
+        do
         {
-            {"1", "Work"},
-            {"2", "Home"},
-            {"3", "School"},
-            {"4", "Outdoors"},
-            {"5", "Other"}
-        };
-        UIHelper.PrintMenuOptions(locationOptions, "Select your current location: ");
-        string choice = Console.ReadLine();
-        string selectedLocationType = "";
+            Console.WriteLine("\nWhere are you right now?");
+            Console.WriteLine("  1. Home");
+            Console.WriteLine("  2. Work");
+            Console.WriteLine("  3. School");
+            Console.WriteLine("  4. Outdoors");
+            Console.WriteLine("  5. Other");
+            UIHelper.PrintColor("Enter choice (1-5): ", ConsoleColor.Yellow);
+            string choice = Console.ReadLine();
 
-        switch (choice)
-        {
-            case "1": selectedLocationType = "Work"; break;
-            case "2": selectedLocationType = "Home"; break;
-            case "3": selectedLocationType = "School"; break;
-            case "4": return "Outdoors"; // Outdoors doesn't require address selection
-            case "5":
-                Console.Write("Please specify 'Other' location: ");
-                return Console.ReadLine();
-            default:
-                Console.WriteLine(UIHelper.GetColoredText("Invalid selection. Defaulting to 'Other'.", ConsoleColor.Yellow));
-                Console.Write("Please specify 'Other' location: ");
-                return Console.ReadLine();
-        }
-
-        // If a specific address type was chosen, let the user select from their saved addresses
-        if (!string.IsNullOrEmpty(selectedLocationType))
-        {
-            List<Address> addresses = _userProfile.GetAddressesByType(selectedLocationType);
-            if (addresses.Any())
+            switch (choice)
             {
-                Console.WriteLine("\n\n"); 
-                UIHelper.DisplayHeader("Mood Check-in");
-                Console.WriteLine($"\nWhich {selectedLocationType} address are you at?");
-                for (int i = 0; i < addresses.Count; i++)
-                {
-                    Console.WriteLine(UIHelper.GetColoredText($"{i + 1}. {addresses[i].GetFullAddress()}", ConsoleColor.Green));
-                }
-                Console.WriteLine(UIHelper.GetColoredText("--------------------------", ConsoleColor.Yellow));
-                Console.Write("Select an address number: ");
-                if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= addresses.Count)
-                {
-                    return addresses[index - 1].GetFullAddress(); // Return the selected full address
-                }
-                else
-                {
-                    Console.WriteLine(UIHelper.GetColoredText("Invalid selection. Using generic location type.", ConsoleColor.Yellow));
-                    return selectedLocationType; // Fallback to just the type
-                }
+                case "1": location = "home"; isValidChoice = true; break;
+                case "2": location = "work"; isValidChoice = true; break;
+                case "3": location = "school"; isValidChoice = true; break;
+                case "4": location = "outdoors"; isValidChoice = true; break;
+                case "5": location = "other"; isValidChoice = true; break;
+                default: UIHelper.PrintColor("Invalid choice. Please enter a number from 1 to 5.\n", ConsoleColor.Red); break;
             }
-            else
-            {
-                Console.WriteLine(UIHelper.GetColoredText($"No '{selectedLocationType}' addresses found in your profile. Using generic '{selectedLocationType}'.", ConsoleColor.Yellow));
-                Thread.Sleep(1500);
-                return selectedLocationType; // Return the type if no specific addresses
-            }
-        }
-        return selectedLocationType; 
+        } while (!isValidChoice);
+        return location;
     }
 
-    // Step 4: Get any additional notes from the user
-    private string GetAdditionalNote()
+    // Prompts the user to select a specific address if available in their profile for the given location type.
+    // This integrates with the UserProfile, an exceeding requirement feature.
+    private string GetSpecificAddress(string locationType)
     {
-        Console.WriteLine("\n\n");
-        UIHelper.DisplayHeader("Mood Check-in");
-        Console.WriteLine("\nAnything else to add? (e.g., specific reasons for your mood, what happened, etc.)");
-        Console.WriteLine("(Press Enter if nothing to add)");
-        Console.Write("Your note: ");
-        return Console.ReadLine();
+        List<Address> addresses = _userProfile.Addresses.FindAll(a => a.AddressType.Equals(locationType, StringComparison.OrdinalIgnoreCase));
+
+        if (addresses.Count == 0)
+        {
+            Console.WriteLine($"No saved {locationType} addresses in your profile.");
+            return "";
+        }
+
+        Console.WriteLine($"\nSelect a specific {locationType} address:");
+        for (int i = 0; i < addresses.Count; i++)
+        {
+            Console.WriteLine($"  {i + 1}. {addresses[i].ToString()}");
+        }
+        Console.WriteLine("  0. Skip selecting a specific address");
+
+        int choice;
+        bool isValidChoice = false;
+        do
+        {
+            UIHelper.PrintColor($"Enter choice (0-{addresses.Count}): ", ConsoleColor.Yellow);
+            string input = Console.ReadLine();
+            isValidChoice = int.TryParse(input, out choice) && choice >= 0 && choice <= addresses.Count;
+
+            if (!isValidChoice)
+            {
+                UIHelper.PrintColor("Invalid choice. Please enter a valid number.\n", ConsoleColor.Red);
+            }
+        } while (!isValidChoice);
+
+        return choice == 0 ? "" : addresses[choice - 1].ToString();
     }
 
-    // Saves the mood check-in data to a file (mood_notes.txt)
-    private void SaveMoodData(string mood, List<string> emotions, string location, string note)
+    // Allows the user to enter additional notes for the mood check-in.
+    private string GetNotes()
     {
+        UIHelper.PrintColor("\nAny additional notes? (Optional): ", ConsoleColor.Yellow);
+        return Console.ReadLine() ?? ""; // Return empty string if input is null
+    }
+
+    // Saves the mood check-in data to a text file (mood_log.txt).
+    // This contributes to the persistent mood log exceeding requirement.
+    private void SaveMoodData(string feeling, List<string> emotions, string location, string specificAddress, string note)
+    {
+        string filePath = "mood_log.txt";
         try
         {
-            using (StreamWriter writer = new StreamWriter(_moodLogFilePath, true)) // true for append mode
+            // Append data to the file, creating it if it doesn't exist.
+            using (StreamWriter writer = new StreamWriter(filePath, true))
             {
                 writer.WriteLine($"Timestamp: {DateTime.Now}");
-                writer.WriteLine($"Mood: {mood}");
+                writer.WriteLine($"Feeling: {feeling}");
                 writer.WriteLine($"Emotions: {string.Join(", ", emotions)}");
-                writer.WriteLine($"Location: {location}");
-                writer.WriteLine($"Note: {note}");
-                writer.WriteLine("---"); // Separator for entries
+                writer.WriteLine($"Location: {location}{(string.IsNullOrEmpty(specificAddress) ? "" : $" ({specificAddress})")}");
+                writer.WriteLine($"Notes: {note}");
+                writer.WriteLine(new string('-', 30)); // Separator
             }
-            Console.WriteLine(UIHelper.GetColoredText("\n✅ Mood check-in saved successfully to mood_notes.txt!", ConsoleColor.Green));
         }
         catch (Exception ex)
         {
-            Console.WriteLine(UIHelper.GetColoredText($"❌ Error saving mood check-in: {ex.Message}", ConsoleColor.Red));
+            UIHelper.PrintColor($"Error saving mood data: {ex.Message}", ConsoleColor.Red);
         }
-        Thread.Sleep(2000);
     }
 }

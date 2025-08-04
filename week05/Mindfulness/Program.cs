@@ -1,141 +1,155 @@
+// This program provides various mindfulness activities (Breathing, Reflection, Listing)
+// to help users manage stress and practice mindfulness.
+//
+// Exceeding Requirements / Creativity Features:
+// ---------------------------------------------
+// This application goes beyond the core requirements in several significant ways 
+//to enhance user experience and functionality:
+//
+// 1.  Comprehensive User Profile & Settings Management:
+//     - UserProfile Class: A dedicated UserProfile class is 
+//implemented to store personal information (name, username),
+//         health details (blood type, organ donor, conditions, 
+//allergies, medications), and multiple addresses.
+//     - Address Class: A separate Address class is used to model different
+// address types (Home, Work, School, etc.).
+//     - Persistent Data Storage: User profile data is automatically saved to 
+//and loaded from user_profile.json
+//         using JSON serialization, ensuring user preferences and information
+// persist across application sessions.
+//     - Interactive Settings Menu: A full "Settings" option (menu choice '5')
+// is added to the main menu,
+//         allowing users to view, edit personal info, edit health info, and manage 
+//(add / remove) their saved addresses.
+//
+// 2.  Mood Check-in Activity:
+//     - New Activity Type: An entirely new "Mood Check-in" activity (menu choice '4')
+// is integrated into the main menu.
+//         This allows users to log their current mood, specific emotions, location,
+// and add a personal note.
+//     - Integration with User Profile: The Mood Check-in dynamically uses addresses
+// saved in the UserProfile,
+//         prompting users to select a specific saved address if they choose a location 
+//type (e.g., 'Home', 'Work')
+//         for which they have addresses stored.
+//     - Persistent Mood Log: Mood check-in data is saved to a mood_log.txt file, providing a simple
+//         text-based history of the user's emotional state over time.
+//
+// 3.  Enhanced UI and Animations:
+//     - Animated Welcome Screen: A visually engaging simple dots animation
+//  is displayed upon application startup,
+//         providing a more polished and welcoming experience.
+//     - Advanced Countdown Animation: For all countdowns (e.g., in Breathing Activity), 
+//a clear clock emoji (🕰️)
+//         is used before the seconds count, making the timer more intuitive and visually appealing.
+//     - Typewriter Effect for Detailed Info: In the Breathing Activity, an optional
+// "Read More" feature is added.
+//         When selected, detailed educational content about breathing exercises is displayed with a
+//         smooth, character-by-character "typewriter" animation, enhancing readability and engagement.
+//     - Dotted Pause Animation: Simple, universal dotted animations (...) are used for general pauses, 
+//providing
+//         a clear indication of activity without requiring complex cursor manipulation.
+//
+
+// These features collectively aim to create a more personalized, informative, 
+//and engaging mindfulness application.
+//
 using System;
 using System.Threading;
-using System.Collections.Generic; // Required for Dictionary
+using System.Text; // Required for Encoding
 
-/*
- * W05 Project: Mindfulness Program - DigiHealth App
- *
- * This program implements a mindfulness application called "DigiHealth" that offers
- * various activities to help users relax and reflect. It also includes several
- * exceeding requirements to enhance user experience and personalization.
- *
- * Exceeding Core Requirements:
- * 1.  Enhanced Application Launch Sequence:
- * - Displays a "We are getting you started..." message with a simple dot animation
- * for a few seconds before the main menu appears. This provides a smoother
- * transition and visual feedback to the user.
- * 2.  Custom UI Elements & Styling:
- * - Utilizes a `UIHelper` static class to centralize console UI operations.
- * - Features bold blue header text and bold yellow top/bottom borders.
- * - Menu option numbers (e.g., "1.") are displayed in green.
- * - Special action options (e.g., "N. Next", "M. More") are displayed in yellow.
- * - A yellow separator `--------------------------` is consistently used before input prompts.
- * - Employs basic emojis (e.g., ✅, ❌, ℹ️) for visual feedback (success, error, info).
- * 3.  Comprehensive Breathing Activity Introduction:
- * - Before the breathing exercise starts, the user is offered a choice to "Proceed reading"
- * for a fully detailed explanation of breathing mechanics, factors, and tips.
- * - This detailed information is presented in paragraphs using a **typewriter animation** effect.
- * - After reading, the user can choose to "Read again" or "Go back" to the exercise.
- * 4.  Persistent User Profile & Settings:
- * - Introduces a new "Settings" menu option.
- * - Allows users to set and save their `Full Name`, `Username`, and manage `Addresses` and `Health Info`.
- * - `UserProfile` data (including addresses and health details) is **saved to and loaded from `user_profile.txt`**
- * at application start and when leaving the settings menu, providing persistence.
- * - Users can add/remove multiple addresses (categorized by type: Home, Work, School, Other).
- * - Users can log detailed health information: medical conditions, blood type, allergies, current medications, and organ donor status.
- * 5.  Interactive Mood Check-in Feature:
- * - Adds a new "Mood Check-in" activity in the main menu.
- * - Guides the user through a series of questions: "How are you feeling?", "Which emotions?", "Where are you now?", and "Anything else to add?".
- * - The "Emotions" section allows cycling through "M. More" options for a richer selection of feelings.
- * - The "Where are you now?" question integrates directly with the `UserProfile`'s saved addresses:
- * If "Home", "Work", or "School" is selected, and multiple addresses of that type are saved,
- * the app will list them and prompt the user to choose a specific address.
- * - All mood check-in data (including the optional note) is saved to `mood_notes.txt`,
- * providing a personal log over time.
- * 6.  User Session Control:
- * - Although not explicitly implemented as a separate "cancel" button everywhere due to console limitations,
- * the structure allows for graceful exits from sub-menus (e.g., "0. Back to Main Menu" in Settings)
- * and activities conclude automatically based on duration, returning to the main menu.
- * The primary exit is via the main menu's "Quit" option.
- *
- * This comprehensive design significantly enhances the core mindfulness program by adding
- * personalization, persistent data storage, expanded content, and a more interactive
- * and visually engaging user interface, demonstrating a strong understanding of
- * object-oriented principles and exceeding the basic requirements.
- */
-
-class Program
+public class Program
 {
-    private static UserProfile _currentUserProfile; // Store the user profile globally
-
-    static void Main(string[] args)
+    // The Main method serves as the entry point of the application.
+    // It initializes core components and manages the main application loop.
+    public static void Main(string[] args)
     {
-        // --- Application Launch Sequence (Exceeding Requirements) ---
-        Console.WriteLine("\n\n\n\n"); // Add some space for the initial animation
-        Console.Write("          " + UIHelper.GetColoredText("We are getting you started", ConsoleColor.White));
-        UIHelper.ShowSimpleDotAnimation(4); // Use the reliable dot animation for 4 seconds
+        // Set console output encoding to UTF-8 to ensure proper display of special characters and emojis.
+        Console.OutputEncoding = Encoding.UTF8;
 
-        _currentUserProfile = new UserProfile(); // Initialize and load user profile at startup
+        // Display the initial application header.
+        UIHelper.PrintHeader("DigiHealth", "");
 
-        // --- Main Application Loop ---
-        RunMainMenu();
+        // Show a welcome animation at the start of the application.
+        // This is an exceeding requirement feature.
+        UIHelper.AnimateWelcome(4); // Animates for 4 seconds
+
+        // Display a message indicating the application is starting up.
+        Console.WriteLine("\nWe are getting you started...");
+        Thread.Sleep(2000); // Pause for 2 seconds
+
+        // Initialize the UserProfile object and attempt to load saved profile data.
+        // This supports persistent user settings, an exceeding requirement feature.
+        UserProfile userProfile = new UserProfile();
+        userProfile.LoadProfile();
+
+        // Start the main menu loop, passing the userProfile for access in other features.
+        RunMainMenu(userProfile);
     }
 
-    // --- Main Menu Logic ---
-    static void RunMainMenu()
+    // RunMainMenu manages the main application menu and user interaction.
+    // It continuously displays options until the user chooses to quit.
+    private static void RunMainMenu(UserProfile userProfile)
     {
         string choice = "";
-        while (choice != "6") // Option 6 is "Quit"
+        while (choice != "0")
         {
-            // --- REMOVED Console.Clear() from here ---
-            UIHelper.DisplayHeader("Home");
+            // Display the main application header with "Home" as the current section.
+            UIHelper.PrintHeader("DigiHealth", "Home");
 
-            // Use UIHelper to print colored menu options
-            Console.WriteLine(UIHelper.GetColoredText("1. Breathing Activity", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("2. Reflection Activity", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("3. Listing Activity", ConsoleColor.Green));
-            Console.WriteLine(UIHelper.GetColoredText("4. Mood Check-in", ConsoleColor.Green)); // Exceeding Requirement
-            Console.WriteLine(UIHelper.GetColoredText("5. Settings", ConsoleColor.Green));     // Exceeding Requirement
-            Console.WriteLine(UIHelper.GetColoredText("6. Quit", ConsoleColor.Green));
+            // Display all the available options in the main menu.
+            UIHelper.PrintMainMenuOptions();
 
-            Console.WriteLine(UIHelper.GetColoredText("--------------------------", ConsoleColor.Yellow)); // Separator
-            Console.Write("Select a choice from the menu: ");
+            // Prompt the user to enter their choice and read the input.
+            UIHelper.PrintColor("Enter your choice: ", ConsoleColor.Yellow);
             choice = Console.ReadLine();
 
-            // Handle user choice by instantiating and running the selected activity/feature
+            // Use a switch statement to handle different user choices.
             switch (choice)
             {
                 case "1":
-                    // --- Added Console.WriteLine("\n") for spacing instead of clearing ---
-                    Console.WriteLine("\n");
+                    // Option 1: Start the Breathing Activity.
                     BreathingActivity breathingActivity = new BreathingActivity();
                     breathingActivity.Run();
                     break;
                 case "2":
-                    Console.WriteLine("\n");
+                    // Option 2: Start the Reflection Activity.
                     ReflectionActivity reflectionActivity = new ReflectionActivity();
                     reflectionActivity.Run();
                     break;
                 case "3":
-                    Console.WriteLine("\n");
+                    // Option 3: Start the Listing Activity.
                     ListingActivity listingActivity = new ListingActivity();
                     listingActivity.Run();
                     break;
                 case "4":
-                    Console.WriteLine("\n");
-                    MoodCheckIn moodCheckIn = new MoodCheckIn(_currentUserProfile); // Pass the user profile
+                    // Option 4: Start the Mood Check-in Activity.
+                    // This is an exceeding requirement feature.
+                    MoodCheckIn moodCheckIn = new MoodCheckIn(userProfile);
                     moodCheckIn.StartCheckIn();
                     break;
                 case "5":
-                    Console.WriteLine("\n");
-                    _currentUserProfile.DisplaySettingsMenu(); // Open the settings menu
+                    // Option 5: Display the Settings menu.
+                    // This is an exceeding requirement feature, managed by UserProfile.
+                    userProfile.DisplaySettingsMenu();
                     break;
-                case "6":
-                    Console.WriteLine("\nExiting DigiHealth. Goodbye!");
-                    // _currentUserProfile.SaveProfile(); // Save profile one last time on exit if changes were made outside settings
+                case "0":
+                    // Option 0: Quit the application.
+                    Console.WriteLine("Goodbye!");
                     break;
                 default:
-                    Console.WriteLine(UIHelper.GetColoredText("❌ Invalid choice. Please try again.", ConsoleColor.Red));
-                    Thread.Sleep(2000); // Pause to show error message
+                    // Handle invalid input.
+                    UIHelper.PrintColor("\nInvalid choice. Please enter a number from the menu.", ConsoleColor.Red);
+                    UIHelper.ShowDottedPause(2); // Pause briefly with dots for user to read message
                     break;
             }
 
-            // Pause before returning to the main menu, unless quitting
-            if (choice != "6")
+            // After an activity or invalid input (unless quitting), pause before redisplaying the menu.
+            if (choice != "0")
             {
-                Console.WriteLine("\nPress any key to return to menu...");
-                Console.ReadLine();
-                
+                Console.WriteLine("\n"); // Add some spacing
+                UIHelper.PrintColor("Press Enter to continue to the main menu...", ConsoleColor.Yellow);
+                Console.ReadLine(); // Wait for user to press Enter
             }
         }
     }

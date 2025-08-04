@@ -1,74 +1,65 @@
-// Activity.cs
 using System;
 using System.Threading;
 
-public class Activity
+// Base class for all mindfulness activities.
+// It contains common attributes and behaviors shared by derived activity types.
+public abstract class Activity
 {
-    // --- Attributes ---
-    private string _name;
-    private string _description;
-    protected int _duration; // Protected so derived classes can access directly if needed,
-                             
-    // --- Constructor ---
+    // Protected member variables accessible by derived classes for activity details.
+    protected string _activityName;
+    protected string _description;
+    protected int _duration;
+
+    // Constructor to initialize common activity properties.
     public Activity(string name, string description)
     {
-        _name = name;
+        _activityName = name;
         _description = description;
-        _duration = 0; // Default duration
     }
 
-    // --- Methods ---
-
-    // Displays the common starting message for all activities.
-    public void DisplayStartingMessage()
+    // Displays a common starting message for any activity.
+    // It prompts the user for the duration and includes a preparation pause.
+    protected void DisplayStartingMessage()
     {
-        UIHelper.DisplayHeader("Activity Start"); // Use UIHelper for consistent header
-        Console.WriteLine($"Welcome to the {UIHelper.GetColoredText(_name, ConsoleColor.Cyan)} Activity.");
-        Console.WriteLine($"\n{_description}");
+        UIHelper.PrintHeader(_activityName, "Starting"); // Display activity specific header
+        UIHelper.PrintColor($"Description: {_description}\n", ConsoleColor.Green);
 
-        Console.WriteLine(UIHelper.GetColoredText("\n--------------------------", ConsoleColor.Yellow));
-        Console.Write("How long, in seconds, would you like for your session? ");
-        string input = Console.ReadLine();
-        if (int.TryParse(input, out int durationInput) && durationInput > 0)
+        // Prompt user for activity duration and validate input.
+        int parsedDuration;
+        bool isValidInput = false;
+        do
         {
-            _duration = durationInput;
-        }
-        else
-        {
-            Console.WriteLine(UIHelper.GetColoredText("Invalid duration. Setting to default 30 seconds.", ConsoleColor.Red));
-            _duration = 30; // Default to 30 seconds on invalid input
-            Thread.Sleep(2000);
-        }
+            UIHelper.PrintColor("How long, in seconds, would you like for your session? ", ConsoleColor.Yellow);
+            string durationInput = Console.ReadLine();
+            isValidInput = int.TryParse(durationInput, out parsedDuration);
 
-        Console.WriteLine("\nPrepare to begin...");
-        UIHelper.ShowSpinner(5); // Pause with spinner for 5 seconds
+            if (!isValidInput || parsedDuration <= 0)
+            {
+                UIHelper.PrintColor("Invalid input. Please enter a positive number for duration.", ConsoleColor.Red);
+            }
+        } while (!isValidInput || parsedDuration <= 0);
+
+        _duration = parsedDuration; // Set the activity duration
+
+        UIHelper.PrintColor("\nPrepare to begin...", ConsoleColor.Cyan);
+        UIHelper.ShowDottedPause(3); // Pause for 3 seconds with a dotted animation
+        Console.WriteLine(); // Add a newline after the pause animation
     }
 
-    // Displays the common ending message for all activities.
-    public void DisplayEndingMessage()
+    // Displays a common ending message for any activity.
+    // It congratulates the user and summarizes the completed activity and its duration.
+    protected void DisplayEndingMessage()
     {
-        Console.WriteLine("\nWell done!");
-        UIHelper.ShowSpinner(3); // Pause with spinner for 3 seconds
+        Console.WriteLine(); // Add a newline for spacing before the ending message
+        UIHelper.PrintColor("Well done!", ConsoleColor.Green);
+        UIHelper.ShowDottedPause(3); // Pause for 3 seconds with a dotted animation
 
-        Console.WriteLine($"\nYou have completed the {UIHelper.GetColoredText(_name, ConsoleColor.Cyan)} for {UIHelper.GetColoredText(_duration.ToString(), ConsoleColor.Green)} seconds.");
-        UIHelper.ShowSpinner(5); // Pause with spinner for 5 seconds before returning to menu
+        UIHelper.PrintColor($"\nYou have completed the {_activityName} for {_duration} seconds.", ConsoleColor.Yellow);
+        UIHelper.ShowDottedPause(3); // Pause for 3 seconds with a dotted animation
+        Console.WriteLine(); // Add a newline after the pause animation
     }
 
-    // Handles the generic spinner animation.
-    public void ShowSpinner(int seconds)
-    {
-        UIHelper.ShowSpinner(seconds);
-    }
-
-    // Getter for the activity name (useful for ending message)
-    public string GetName()
-    {
-        return _name;
-    }
-
-    // Getter for the duration
-    public int GetDuration()
-    {
-        return _duration;
-    }
+    // Abstract method to be implemented by derived classes.
+    // This method contains the specific logic for each type of mindfulness activity.
+    public abstract void Run();
 }

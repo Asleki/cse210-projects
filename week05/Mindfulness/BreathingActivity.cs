@@ -1,112 +1,121 @@
-// BreathingActivity.cs
 using System;
 using System.Threading;
+using System.Collections.Generic;
 
-public class BreathingActivity : Activity
+// Derived class representing the Breathing Activity.
+// It extends the base Activity class and implements the specific breathing exercise logic.
+class BreathingActivity : Activity
 {
-    // --- Constructor ---
+    // Constructor initializes the activity with its specific name and description.
     public BreathingActivity() : base("Breathing Activity", "This activity will help you relax by walking you through breathing in and out slowly. Clear your mind and focus on your breathing.")
     {
-        // No specific attributes beyond inherited ones
     }
 
-    // --- Specific Behaviors ---
-
-    // This is the main method to run the breathing activity.
-    public void Run()
+    // Overrides the abstract Run() method to execute the Breathing Activity.
+    // It includes an optional introductory content display and the main breathing cycle loop.
+    public override void Run()
     {
-        DisplayStartingMessage(); // Call base class method
+        // Display the introductory content for the breathing activity.
+        // This includes the "Read More" exceeding requirement feature.
+        DisplayBreathingIntro();
 
-        // --- Exceeding Requirements: Enhanced Breathing Activity Intro ---
-        ShowEnhancedBreathingIntro();
+        // Display the standard starting message (gets duration, prepares to begin).
+        DisplayStartingMessage();
 
-        // --- Core Breathing Exercise ---
-        Console.WriteLine("\nNow, let's begin the breathing exercise.");
-        UIHelper.ShowSpinner(3); // Brief pause before starting
-
+        // Calculate the end time for the activity based on the user-defined duration.
         DateTime startTime = DateTime.Now;
         DateTime endTime = startTime.AddSeconds(_duration);
 
+        // Loop to guide the user through breathing in and out until the duration is met.
         while (DateTime.Now < endTime)
         {
-            Console.Write("\nBreathe in...");
-            UIHelper.ShowCountdown(4); // Breathe in for 4 seconds
+            // Guide user to breathe in with a countdown.
+            UIHelper.PrintColor("\nBreathe in...", ConsoleColor.Cyan);
+            UIHelper.ShowCountdown(4); // Inhale for 4 seconds
 
-            Console.Write("Breathe out...");
-            UIHelper.ShowCountdown(6); // Breathe out for 6 seconds
+            // Add a brief dotted pause between inhale and exhale phases for better flow.
+            UIHelper.ShowDottedPause(1); // One dot pause after inhale
+
+            // Guide user to breathe out with a countdown.
+            UIHelper.PrintColor("\nBreathe out...", ConsoleColor.Cyan);
+            UIHelper.ShowCountdown(6); // Exhale for 6 seconds
         }
 
-        DisplayEndingMessage(); // Call base class method
+        // Display the standard ending message for the activity.
+        DisplayEndingMessage();
     }
 
-    // Handles the enhanced introductory content for the Breathing Activity.
-    private void ShowEnhancedBreathingIntro()
+    // Displays a brief introduction to breathing exercises and offers to show more detailed information.
+    // This method implements an exceeding requirement feature.
+    private void DisplayBreathingIntro()
     {
-        Console.WriteLine("\n\n"); // Added for spacing instead of Clear()
-        UIHelper.DisplayHeader("Breathing Intro");
-        Console.WriteLine("Breathing exercises are a simple yet powerful way to calm your mind and body.");
-        Console.WriteLine("They can help reduce stress, improve focus, and promote relaxation.");
-
-        // Options for user
-        var options = new System.Collections.Generic.Dictionary<string, string>
+        UIHelper.PrintHeader("Breathing Activity", "Introduction");
+        Console.WriteLine("Breathing exercises are a simple way to relax and calm your mind.");
+        
+        // Prompt the user if they want to read more details or start the exercise immediately.
+        UIHelper.PrintColor("\nWould you like to (R)ead More about breathing or (Y)ield and Start the exercise? (R/Y): ", ConsoleColor.Yellow);
+        string choice = Console.ReadLine()?.ToLower();
+        
+        // If the user chooses 'r', display the detailed information.
+        if (choice == "r")
         {
-            { "1", "Start exercise now" },
-            { "2", "Proceed reading (Learn more)" }
+            DisplayDetailedBreathingInfo();
+            // After viewing detailed info, return to this prompt to allow the user
+            // to explicitly choose 'Y' to start or 'R' again.
+            DisplayBreathingIntro(); 
+        }
+        // If choice is 'y' or anything else, the method exits and the Run() method
+        // will proceed to DisplayStartingMessage(), effectively starting the activity.
+    }
+
+    // Provides detailed educational content about breathing exercises using a typewriter animation.
+    // This method implements an exceeding requirement feature.
+    private void DisplayDetailedBreathingInfo()
+    {
+        // Define educational paragraphs about breathing techniques and benefits.
+        string paragraph1 = "Deep, conscious breathing is a powerful tool for managing stress and improving overall well-being. Unlike shallow chest breathing, diaphragmatic (belly) breathing engages the diaphragm, leading to more efficient oxygen intake and activation of the parasympathetic nervous system, which promotes relaxation.";
+        string paragraph2 = "Regular practice of controlled breathing can lower heart rate, reduce blood pressure, decrease muscle tension, and calm the mind. It helps to break the 'fight or flight' response often triggered by daily stressors, bringing your body and mind into a state of balance and peace. This practice fosters mindfulness, helping you stay present and grounded.";
+        string subheader = "Key Considerations & Tips for Effective Breathing:";
+        
+        // Define a list of practical tips for performing breathing exercises.
+        List<string> tips = new List<string>
+        {
+            "Find a quiet, distraction-free space where you won't be interrupted.",
+            "Sit or lie down in a comfortable position, ensuring your back is supported and your body is relaxed.",
+            "Place one hand on your chest and the other on your belly. As you breathe, try to make your belly rise more than your chest.",
+            "Inhale slowly through your nose, feeling your abdomen expand. Count slowly to four as you inhale.",
+            "Hold your breath briefly for a count of one or two.",
+            "Exhale slowly through your mouth (or nose), gently pursing your lips, for a count of six or more, feeling your belly fall.",
+            "Focus entirely on the sensation of your breath. If your mind wanders, gently bring it back to your breathing.",
+            "Don't force your breath; let it be a natural, gentle, and continuous rhythm. Consistency is key, even short sessions are beneficial."
         };
-        UIHelper.PrintMenuOptions(options, "Your choice: ");
-        string choice = Console.ReadLine();
 
-        if (choice == "2")
+        // Display the header for the detailed information section.
+        UIHelper.PrintHeader("Breathing Activity", "Detailed Information");
+        Console.WriteLine(); // Add a newline for spacing after header
+
+        // Animate the first paragraph with a typewriter effect and pause.
+        UIHelper.AnimateTypewriter(paragraph1, 30); // 30ms delay per character
+        Thread.Sleep(1500); // Pause for 1.5 seconds after paragraph
+
+        Console.WriteLine(); // Add a newline between paragraphs for better readability
+
+        // Animate the second paragraph with a typewriter effect and pause.
+        UIHelper.AnimateTypewriter(paragraph2, 30); // 30ms delay per character
+        Thread.Sleep(1500); // Pause for 1.5 seconds after paragraph
+
+        // Print the subheader for tips in a distinct color.
+        UIHelper.PrintColor($"\n{subheader}\n", ConsoleColor.Cyan);
+
+        // Animate and display each tip with a bullet point.
+        foreach (var tip in tips)
         {
-            Console.WriteLine("\n\n"); 
-            UIHelper.DisplayHeader("Detailed Breathing Info");
-
-            // Paragraph 1
-            UIHelper.AnimateTypewriter("Normal breathing patterns involve a cycle of inhalation (breathing in) and exhalation (breathing out). Typically, an adult takes about 12 to 20 breaths per minute at rest. Inhalation is an active process where the diaphragm contracts, drawing air into the lungs. Exhalation is usually passive, as the diaphragm relaxes and air leaves the lungs.");
-            Thread.Sleep(2000); // Pause before next section
-
-            Console.WriteLine("\n\n"); 
-            UIHelper.DisplayHeader("Detailed Breathing Info");
-
-            // Paragraph 2
-            UIHelper.AnimateTypewriter("Factors affecting breathing include physical activity, stress, emotions, and underlying health conditions. Mindful breathing aims to regulate these patterns, often by extending exhalation, to stimulate the parasympathetic nervous system, which promotes a state of rest and digestion.");
-            Thread.Sleep(2000); // Pause before next section
-
-            Console.WriteLine("\n\n"); 
-            UIHelper.DisplayHeader("Tips for Breathing Exercises");
-
-            // Tips
-            UIHelper.AnimateTypewriter("Tip 1: Find a quiet space where you won't be disturbed. Sit or lie down in a comfortable position. Close your eyes gently if you feel comfortable doing so.");
-            Thread.Sleep(1500);
-            UIHelper.AnimateTypewriter("Tip 2: Focus on your breath. Notice the sensation of air entering and leaving your body. Don't try to change anything initially, just observe.");
-            Thread.Sleep(1500);
-            UIHelper.AnimateTypewriter("Tip 3: Practice diaphragmatic (belly) breathing. Place one hand on your chest and the other on your belly. As you breathe in, your belly should rise, and as you breathe out, it should fall. Your chest should remain relatively still.");
-            Thread.Sleep(1500);
-            UIHelper.AnimateTypewriter("Tip 4: Count your breaths. Try inhaling for a count of four, holding for a count of two, and exhaling for a count of six. Adjust the counts to what feels comfortable for you.");
-            Thread.Sleep(1500);
-            UIHelper.AnimateTypewriter("Tip 5: Incorporate it into your daily routine. Even a few minutes of mindful breathing can make a difference. Practice before bed, during breaks, or whenever you feel stressed.");
-            Thread.Sleep(2000);
-
-            // After all detailed info, allow user to repeat or go back
-            Console.WriteLine(UIHelper.GetColoredText("\n--------------------------", ConsoleColor.Yellow));
-            var readOptions = new System.Collections.Generic.Dictionary<string, string>
-            {
-                { "1", "Read again" },
-                { "2", "Go back to Breathing Activity" }
-            };
-            UIHelper.PrintMenuOptions(readOptions, "Your choice: ");
-            string readChoice = Console.ReadLine();
-
-            if (readChoice == "1")
-            {
-                Console.WriteLine("\n\n");
-                ShowEnhancedBreathingIntro(); // Recursively call to read again
-            }
-            Console.WriteLine("\n\n"); 
+            UIHelper.AnimateTypewriter($"- {tip}", 25); // 25ms delay per character, add bullet point
+            Thread.Sleep(300); // Shorter pause between tips
         }
-        else
-        {
-            Console.WriteLine("\n\n"); 
-        }
+        
+        // Prompt user to press Enter to continue back to the activity menu.
+        UIHelper.PrintColor("\nPress Enter to return to the Breathing Activity menu...", ConsoleColor.Yellow);
+        Console.ReadLine(); // Wait for user input
     }
 }

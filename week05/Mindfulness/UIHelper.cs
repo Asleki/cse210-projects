@@ -1,96 +1,168 @@
-// UIHelper.cs
 using System;
 using System.Threading;
-using System.Collections.Generic; // Required for List
-using System.Linq; // Required for LINQ, though not explicitly used in this snippet, good practice to have if other parts might use it.
+using System.Text;
 
+// Static utility class for all User Interface (UI) related operations.
+// It handles displaying formatted text, colors, headers, and various animations.
 public static class UIHelper
 {
-    // --- Header Display Method ---
-    public static void DisplayHeader(string subheader)
+    // A helper method to safely control console cursor visibility.
+    // Catches IOException which can occur in certain terminal environments (e.g., some IDEs).
+    private static void SetCursorVisibility(bool visible)
     {
-        Console.WriteLine(GetColoredText("==========================", ConsoleColor.Yellow));
-        Console.WriteLine(GetColoredText("         DigiHealth         ", ConsoleColor.Blue));
-        Console.WriteLine(GetColoredText("==========================", ConsoleColor.Yellow));
-        Console.WriteLine($"   {subheader}\n");
+        try
+        {
+            Console.CursorVisible = visible;
+        }
+        catch (System.IO.IOException)
+        {
+            // Ignore the error if cursor visibility cannot be changed.
+        }
     }
 
-    // --- Helper for Coloring Text ---
-    public static string GetColoredText(string text, ConsoleColor color)
+    // A helper method to safely get the console window width.
+    // Catches IOException and provides a fallback default width.
+    private static int GetConsoleWindowWidth()
     {
-        ConsoleColor originalColor = Console.ForegroundColor;
+        try
+        {
+            return Console.WindowWidth;
+        }
+        catch (System.IO.IOException)
+        {
+            // Fallback to a common default width if console width cannot be obtained.
+            return 80; // Default width for layout purposes
+        }
+    }
+
+    // A helper method to safely set the console cursor position.
+    // Catches IOException and ArgumentOutOfRangeException if setting position is not supported or invalid.
+    private static void SetCursorPosition(int left, int top)
+    {
+        try
+        {
+            Console.SetCursorPosition(left, top);
+        }
+        catch (System.IO.IOException)
+        {
+            // Ignore the error if cursor position cannot be set.
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Ignore if the specified position is out of the console's bounds.
+        }
+    }
+
+    // Prints a message to the console in a specified color.
+    public static void PrintColor(string message, ConsoleColor color)
+    {
         Console.ForegroundColor = color;
-        string coloredText = text;
-        Console.ForegroundColor = originalColor; // Reset color immediately
-        return coloredText;
+        Console.Write(message);
+        Console.ResetColor(); // Reset color to default after printing
     }
 
-    
-    public static void ShowSpinner(int seconds)
+    // Displays a formatted header with a main title and an optional sub-header (like pagination).
+    // This method no longer uses Console.Clear() to avoid IOExceptions.
+    public static void PrintHeader(string mainTitle, string subHeader)
     {
-        Console.WriteLine("  Preparing activity:"); // Initial message before spinner starts
-        string[] frames = { "⏰ .", "⏰ ..", "⏰ ..." }; // Visual frames for the "spinner"
-        DateTime startTime = DateTime.Now;
-        int frameIndex = 0;
-        int animationInterval = 400; // milliseconds between frame updates
+        // Add a few newlines to push previous content up, simulating a "clear" without Console.Clear().
+        Console.WriteLine("\n\n\n"); 
+        
+        int consoleWidth = GetConsoleWindowWidth();
 
-        while (DateTime.Now - startTime < TimeSpan.FromSeconds(seconds))
+        // Print top border
+        PrintColor(new string('=', consoleWidth), ConsoleColor.DarkYellow);
+        Console.WriteLine();
+
+        // Print main title centered
+        string paddedMainTitle = mainTitle.PadLeft((consoleWidth + mainTitle.Length) / 2).PadRight(consoleWidth);
+        PrintColor(paddedMainTitle, ConsoleColor.Blue);
+        Console.WriteLine();
+
+        // Print sub-header if provided
+        if (!string.IsNullOrEmpty(subHeader))
         {
-            Console.WriteLine($"  {frames[frameIndex]}"); // Each frame prints on a new line
-            frameIndex = (frameIndex + 1) % frames.Length;
-            Thread.Sleep(animationInterval);
+            string paddedSubHeader = subHeader.PadLeft((consoleWidth + subHeader.Length) / 2).PadRight(consoleWidth);
+            PrintColor(paddedSubHeader, ConsoleColor.Green);
+            Console.WriteLine();
         }
-        Console.WriteLine(" "); // Add an extra newline for separation after the spinner animation
+        
+        // Print bottom border
+        PrintColor(new string('=', consoleWidth), ConsoleColor.DarkYellow);
+        Console.WriteLine("\n"); // Add some spacing after the header
     }
 
-        public static void ShowCountdown(int seconds)
+    // Displays the main menu options for the application.
+    public static void PrintMainMenuOptions()
     {
-        for (int i = seconds; i > 0; i--)
-        {
-            Console.WriteLine($"  {i}"); // Print each number on a new line, with some indentation
-            Thread.Sleep(1000); // 1-second pause
-        }
-        Console.WriteLine(" "); // Add an extra newline for separation after countdown
+        Console.WriteLine("Select an activity:");
+        PrintColor("  1. ", ConsoleColor.Green); Console.WriteLine("Start Breathing Activity");
+        PrintColor("  2. ", ConsoleColor.Green); Console.WriteLine("Start Reflection Activity");
+        PrintColor("  3. ", ConsoleColor.Green); Console.WriteLine("Start Listing Activity");
+        PrintColor("  4. ", ConsoleColor.Green); Console.WriteLine("Mood Check-in"); // Exceeding requirement
+        PrintColor("  5. ", ConsoleColor.Green); Console.WriteLine("Settings"); // Exceeding requirement
+        PrintColor("  0. ", ConsoleColor.Green); Console.WriteLine("Quit");
+        Console.WriteLine(); // Add spacing
     }
 
-    // --- Simple Dot Loading Animation (for initial startup, most compatible) ---
-        public static void ShowSimpleDotAnimation(int seconds)
+    // Shows a general dotted pause animation for a given number of seconds.
+    // This is a simplified animation that is robust across various terminals.
+    public static void ShowDottedPause(int seconds)
     {
-        DateTime startTime = DateTime.Now;
-        while ((DateTime.Now - startTime).TotalSeconds < seconds)
+        SetCursorVisibility(false); // Hide cursor during animation
+
+        for (int i = 0; i < seconds; i++)
         {
             Console.Write(".");
-            Thread.Sleep(500);
+            Thread.Sleep(1000); // Wait 1 second per dot
         }
-        Console.WriteLine(); // New line after animation
+        SetCursorVisibility(true); // Show cursor again
     }
 
-    // --- Typewriter Animation (for detailed descriptions in Breathing Activity) ---
-    public static void AnimateTypewriter(string text, int delayMilliseconds = 50)
+    // Shows a countdown timer with a clock emoji prefix.
+    // Uses carriage return (\r) for in-place updates, which is more robust than backspace for varied lengths.
+    // This is an exceeding requirement feature for enhanced animation.
+    public static void ShowCountdown(int seconds)
+    {
+        Console.OutputEncoding = Encoding.UTF8; // Ensure emoji display
+        SetCursorVisibility(false); // Hide cursor during animation
+
+        // Determine max length of message to ensure proper clearing
+        // e.g., "🕰️ 10 " vs "🕰️ 1 "
+        int maxLength = $"🕰️ {seconds} ".Length + 2; // Add a bit extra for safety
+
+        for (int i = seconds; i > 0; i--)
+        {
+            string message = $"🕰️ {i} "; 
+            // Use \r to return to start of line, then overwrite with spaces to clear, then return \r, then write new message
+            Console.Write($"\r{new string(' ', maxLength)}\r{message}");
+            Thread.Sleep(1000);
+        }
+        // Clear the final countdown message from the line
+        Console.Write($"\r{new string(' ', maxLength)}\r"); 
+        
+        SetCursorVisibility(true); // Show cursor again
+    }
+
+    // Displays a welcome animation using simple dots.
+    // This ensures consistency with the user's preference for dotted animations.
+    public static void AnimateWelcome(int durationSeconds)
+    {
+        Console.WriteLine("\n"); // Add spacing
+        UIHelper.PrintColor("Loading", ConsoleColor.Blue);
+        ShowDottedPause(durationSeconds); // Use the simple dotted pause for welcome animation
+        Console.WriteLine("\n"); // Move to next line after animation
+    }
+
+    // Displays text with a typewriter effect, character by character.
+    // This is an exceeding requirement feature for engaging content presentation.
+    public static void AnimateTypewriter(string text, int delayMs)
     {
         foreach (char c in text)
         {
             Console.Write(c);
-            Thread.Sleep(delayMilliseconds);
+            Thread.Sleep(delayMs); // Pause after each character
         }
-        Console.WriteLine(); // New line after typing
-    }
-
-    // --- Print options with green/yellow numbering/text and separator ---
-    public static void PrintMenuOptions(Dictionary<string, string> options, string prompt)
-    {
-        foreach (var option in options)
-        {
-            if (int.TryParse(option.Key, out _)) // Check if key is a number
-            {
-                Console.WriteLine(GetColoredText($"{option.Key}. {option.Value}", ConsoleColor.Green));
-            }
-            else
-            {
-                Console.WriteLine(GetColoredText($"{option.Key}. {option.Value}", ConsoleColor.Yellow));
-            }
-        }
-        Console.WriteLine(GetColoredText("--------------------------", ConsoleColor.Yellow));
-        Console.Write(prompt);
+        Console.WriteLine(); // Move to next line after text is fully displayed
     }
 }

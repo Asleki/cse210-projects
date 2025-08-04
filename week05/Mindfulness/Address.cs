@@ -1,56 +1,70 @@
-// Address.cs
 using System;
+using System.Text.Json.Serialization; // Required for JsonPropertyName
 
+// Represents a single address entry within the UserProfile.
+// This supports the comprehensive settings management exceeding requirement.
 public class Address
 {
-    // --- Attributes ---
-    private string _streetAddress;
-    private string _city;
-    private string _stateProvince; 
-    private string _zipCode;
-    private string _country;
-    private string _addressType; // e.g., "Home", "Work", "School", "Other"
+    // Properties for address components.
+    // JsonPropertyName attributes ensure consistent serialization/deserialization.
+    [JsonPropertyName("addressType")]
+    public string AddressType { get; set; }
 
-    // --- Constructor ---
-    public Address(string streetAddress, string city, string stateProvince, string zipCode, string country, string addressType)
+    [JsonPropertyName("street")]
+    public string Street { get; set; }
+
+    [JsonPropertyName("city")]
+    public string City { get; set; }
+
+    [JsonPropertyName("state")]
+    public string State { get; set; }
+
+    [JsonPropertyName("zip")]
+    public string Zip { get; set; }
+
+    [JsonPropertyName("country")]
+    public string Country { get; set; }
+
+    // Default constructor for JSON deserialization.
+    public Address() 
     {
-        _streetAddress = streetAddress;
-        _city = city;
-        _stateProvince = stateProvince;
-        _zipCode = zipCode;
-        _country = country;
-        _addressType = addressType;
+        // Initialize string properties to non-null defaults to avoid NRE.
+        AddressType = ""; 
+        Street = "";
+        City = "";
+        State = "";
+        Zip = "";
+        Country = "";
     }
 
-    // --- Getters ---
-    public string GetStreetAddress() { return _streetAddress; }
-    public string GetCity() { return _city; }
-    public string GetStateProvince() { return _stateProvince; }
-    public string GetZipCode() { return _zipCode; }
-    public string GetCountry() { return _country; }
-    public string GetAddressType() { return _addressType; }
-
-    // --- Method to display the address ---
-    public string GetFullAddress()
+    // Parameterized constructor for creating new Address instances.
+    public Address(string addressType, string street, string city, string state, string zip, string country)
     {
-        return $"{_streetAddress}, {_city}, {_stateProvince} {_zipCode}, {_country} ({_addressType})";
+        AddressType = addressType;
+        Street = street;
+        City = city;
+        State = state;
+        Zip = zip;
+        Country = country;
     }
 
-    // --- Method to convert to string for saving/displaying simpler form ---
-    // This format will be used for saving and loading from file
+    // Overrides ToString() to provide a formatted string representation of the address.
     public override string ToString()
     {
-        return $"{_streetAddress}|{_city}|{_stateProvince}|{_zipCode}|{_country}|{_addressType}";
-    }
+        string addressPart1 = string.IsNullOrEmpty(Street) ? "" : $"{Street}, ";
+        string addressPart2 = string.IsNullOrEmpty(City) ? "" : $"{City}";
+        string addressPart3 = string.IsNullOrEmpty(State) ? "" : $", {State}";
+        string addressPart4 = string.IsNullOrEmpty(Zip) ? "" : $" {Zip}";
+        string addressPart5 = string.IsNullOrEmpty(Country) ? "" : $", {Country}";
 
-    // --- Static method to parse an Address object from a string ---
-    public static Address FromString(string addressString)
-    {
-        string[] parts = addressString.Split('|');
-        if (parts.Length == 6)
+        string fullAddress = $"{AddressType}: {addressPart1}{addressPart2}{addressPart3}{addressPart4}{addressPart5}".Trim();
+        
+        // Remove trailing comma if it exists after trimming
+        if (fullAddress.EndsWith(","))
         {
-            return new Address(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+            fullAddress = fullAddress.TrimEnd(',');
         }
-        return null; // Return null if format is incorrect
+
+        return fullAddress;
     }
 }
