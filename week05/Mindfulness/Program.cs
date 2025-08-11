@@ -79,7 +79,7 @@ public class Program
         Thread.Sleep(2000); // Pause for 2 seconds
 
         // Initialize the UserProfile object and attempt to load saved profile data.
-        // This supports persistent user settings, an exceeding requirement feature.
+        // This supports persistent user settings.
         UserProfile userProfile = new UserProfile();
         userProfile.LoadProfile();
 
@@ -124,7 +124,6 @@ public class Program
                     break;
                 case "4":
                     // Option 4: Start the Mood Check-in Activity.
-                    // This is an exceeding requirement feature.
                     MoodCheckIn moodCheckIn = new MoodCheckIn(userProfile);
                     moodCheckIn.StartCheckIn();
                     break;
