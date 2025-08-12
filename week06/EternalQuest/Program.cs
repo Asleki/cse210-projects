@@ -138,7 +138,7 @@ public class Program
                     RunIqTestMenu(iqTest);
                     break;
                 case "6":
-                    // The main menu now calls the StudyMenu method from the new BookOfMormonStudy class.
+                    // The main menu calls the StudyMenu method from the new BookOfMormonStudy class.
                     bOMStudy.StudyMenu();
                     break;
                 case "0":
@@ -154,7 +154,7 @@ public class Program
         }
     }
 
-    // A separate method to run the goal management menu
+    // A method to run the goal management menu
     public static void RunGoalMenu(GoalManager goalManager)
     {
         bool isGoalMenuRunning = true;
@@ -203,7 +203,7 @@ public class Program
         }
     }
     
-    // A separate method to run the IQ Test menu
+    // A method to run the IQ Test menu
     public static void RunIqTestMenu(IqTest iqTest)
     {
         bool isTestMenuRunning = true;
