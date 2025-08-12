@@ -36,28 +36,28 @@ public class ChecklistGoal : Goal
         _bonus = bonus;
     }
 
-    // Overrides the RecordEvent method from the base class.
+
     // This method increments the completed count.
     public override void RecordEvent()
     {
         _amountCompleted++;
     }
 
-    // Overrides the IsComplete method.
+
     // It returns true if the amount completed meets or exceeds the target.
     public override bool IsComplete()
     {
         return _amountCompleted >= _target;
     }
 
-    // Overrides the GetDetailsString method to provide a more detailed string,
+   
     // including the progress of the goal.
     public override string GetDetailsString()
     {
         return $"{_shortName} ({_description}) -- Completed {_amountCompleted}/{_target} times";
     }
 
-    // Overrides the GetStringRepresentation method.
+
     // It formats the goal's data into a string for saving to a file.
     public override string GetStringRepresentation()
     {

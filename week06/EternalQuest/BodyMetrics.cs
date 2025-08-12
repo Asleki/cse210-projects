@@ -16,7 +16,7 @@ public class BodyMetrics
     {
         public DateTime Date { get; set; }
         public string Type { get; set; } // e.g., "Pressure", "Glucose"
-        public string Value { get; set; } // Stored as a string for flexibility
+        public string Value { get; set; } 
     }
 
     // Member variables for logging.
@@ -115,11 +115,11 @@ public class BodyMetrics
 
         if (gender == "male")
         {
-            bodyFat = (1.20 * bmi) + (0.23 * 30) - 10.8 - 5.4; // Simplified formula for demonstration
+            bodyFat = (1.20 * bmi) + (0.23 * 30) - 10.8 - 5.4; 
         }
         else if (gender == "female")
         {
-            bodyFat = (1.20 * bmi) + (0.23 * 30) - 5.4; // Simplified formula for demonstration
+            bodyFat = (1.20 * bmi) + (0.23 * 30) - 5.4; 
         }
         else
         {
