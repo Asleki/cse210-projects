@@ -16,6 +16,7 @@ public class GoalManager
     private List<Goal> _goals;
     private int _score;
     private int _streak;
+    private DateTime _lastRecordedDate;
 
     // Constructor to initialize the GoalManager.
     public GoalManager()
@@ -23,6 +24,9 @@ public class GoalManager
         _goals = new List<Goal>();
         _score = 0;
         _streak = 0;
+        // The last recorded date is initialized to a minimum value,
+        // which helps to check if an event has ever been recorded.
+        _lastRecordedDate = DateTime.MinValue;
     }
 
     // Displays the current score and daily streak.
@@ -123,14 +127,32 @@ public class GoalManager
             else
             {
                 selectedGoal.RecordEvent();
-                // Accessing the public Points property
+                
+                // The daily streak logic is now handled in this section.
+                // It checks the last recorded date against today's date.
+                DateTime today = DateTime.Today;
+                if (_lastRecordedDate == DateTime.MinValue || _lastRecordedDate < today.AddDays(-1))
+                {
+                    // The streak resets to 1 if this is the first day or if a day was missed.
+                    _streak = 1;
+                }
+                else if (_lastRecordedDate == today.AddDays(-1))
+                {
+                    // The streak increments if the event is recorded on a consecutive day.
+                    _streak++;
+                }
+                // The streak is not changed if an event is recorded more than once in a single day.
+                
+                // The last recorded date is updated to today.
+                _lastRecordedDate = today;
+
+                // The user's score is updated with the points from the selected goal.
                 _score += selectedGoal.Points;
                 Console.WriteLine($"You received {selectedGoal.Points} points!");
                 
-                // Check if a bonus needs to be awarded
+                // The code checks if a bonus needs to be awarded for a ChecklistGoal.
                 if (selectedGoal is ChecklistGoal checklistGoal && checklistGoal.IsComplete())
                 {
-                    // Accessing the public Bonus property
                     _score += checklistGoal.Bonus;
                     Console.WriteLine($"Congratulations! You earned a bonus of {checklistGoal.Bonus} points!");
                 }
@@ -156,6 +178,8 @@ public class GoalManager
             {
                 writer.WriteLine($"{_score}");
                 writer.WriteLine($"{_streak}");
+                // The last recorded date is now saved to the file for persistence.
+                writer.WriteLine($"{_lastRecordedDate.ToShortDateString()}");
                 foreach (Goal goal in _goals)
                 {
                     writer.WriteLine(goal.GetStringRepresentation());
@@ -190,9 +214,11 @@ public class GoalManager
             string[] lines = File.ReadAllLines(filename);
             _score = int.Parse(lines[0]);
             _streak = int.Parse(lines[1]);
+            // The last recorded date is now loaded from the file.
+            _lastRecordedDate = DateTime.Parse(lines[2]);
             _goals.Clear();
 
-            for (int i = 2; i < lines.Length; i++)
+            for (int i = 3; i < lines.Length; i++)
             {
                 string[] parts = lines[i].Split(':');
                 string goalType = parts[0];

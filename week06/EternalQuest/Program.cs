@@ -97,6 +97,8 @@ public class Program
         MealLogger mealLogger = new MealLogger();
         BodyMetrics bodyMetrics = new BodyMetrics();
         IqTest iqTest = new IqTest();
+        // A new instance of the BookOfMormonStudy class is created to handle the study feature.
+        BookOfMormonStudy bOMStudy = new BookOfMormonStudy();
 
         // Main menu loop
         bool isRunning = true;
@@ -105,14 +107,14 @@ public class Program
             // Display player info before each menu loop
             goalManager.DisplayPlayerInfo();
             Console.WriteLine("\n--------------------------------------");
-            Console.WriteLine("       Main Menu");
+            Console.WriteLine("      Main Menu");
             Console.WriteLine("--------------------------------------");
             Console.WriteLine("1. Goal Management");
             Console.WriteLine("2. Exercise");
             Console.WriteLine("3. Meal Log");
             Console.WriteLine("4. Body Metrics");
             Console.WriteLine("5. IQ Test");
-            Console.WriteLine("6. Book of Mormon Study"); // New menu option
+            Console.WriteLine("6. Book of Mormon Study");
             Console.WriteLine("0. Quit");
             Console.Write("Select an option: ");
             
@@ -136,8 +138,8 @@ public class Program
                     RunIqTestMenu(iqTest);
                     break;
                 case "6":
-                    // This is where we will call the BookOfMormonStudy class
-                    Console.WriteLine("\n--- Navigating to Book of Mormon Study. ---");
+                    // The main menu now calls the StudyMenu method from the new BookOfMormonStudy class.
+                    bOMStudy.StudyMenu();
                     break;
                 case "0":
                     isRunning = false;
@@ -160,7 +162,7 @@ public class Program
         {
             goalManager.DisplayPlayerInfo();
             Console.WriteLine("\n--------------------------------------");
-            Console.WriteLine("       Goal Management");
+            Console.WriteLine("      Goal Management");
             Console.WriteLine("--------------------------------------");
             Console.WriteLine("1. Create New Goal");
             Console.WriteLine("2. List Goals");
